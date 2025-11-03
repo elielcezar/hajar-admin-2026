@@ -3,12 +3,29 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import path from 'path';
 
+// Validar variáveis de ambiente AWS
+const AWS_REGION = process.env.AWS_REGION;
+const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
+const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+const AWS_S3_BUCKET = process.env.AWS_S3_BUCKET;
+
+// Log de configuração (sem expor credenciais)
+console.log('🔧 Configurando S3:');
+console.log('  📍 Região:', AWS_REGION || 'NÃO CONFIGURADO');
+console.log('  🗝️  Access Key ID:', AWS_ACCESS_KEY_ID ? `${AWS_ACCESS_KEY_ID.substring(0, 4)}...` : 'NÃO CONFIGURADO');
+console.log('  🔐 Secret Key:', AWS_SECRET_ACCESS_KEY ? '***CONFIGURADO***' : 'NÃO CONFIGURADO');
+console.log('  🪣 Bucket:', AWS_S3_BUCKET || 'NÃO CONFIGURADO');
+
+if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_S3_BUCKET) {
+    console.warn('⚠️  AVISO: Credenciais AWS não configuradas completamente. Uploads podem falhar.');
+}
+
 // Configuração do cliente S3
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
+  region: AWS_REGION,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_SECRET_ACCESS_KEY,
   },
 });
 
@@ -16,7 +33,8 @@ const s3Client = new S3Client({
 export const uploadS3 = multer({
   storage: multerS3({
     s3: s3Client,
-    bucket: process.env.AWS_S3_BUCKET,
+    bucket: AWS_S3_BUCKET,
+    acl: 'public-read', // Tornar objetos públicos para leitura
     contentType: multerS3.AUTO_CONTENT_TYPE,
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });
@@ -28,7 +46,8 @@ export const uploadS3 = multer({
     },
   }),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 10 * 1024 * 1024, // 10MB por arquivo
+    files: 18, // Máximo de 18 arquivos
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];

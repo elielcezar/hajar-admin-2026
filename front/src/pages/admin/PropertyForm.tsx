@@ -147,12 +147,43 @@ export default function PropertyForm() {
     const newFiles = Array.from(files);
     const currentTotal = (formData.fotos?.length || 0) + (formData.oldPhotos?.length || 0);
     
-    if (currentTotal + newFiles.length > 10) {
+    if (currentTotal + newFiles.length > 18) {
       toast({
         variant: 'destructive',
         title: 'Limite de imagens',
-        description: 'Você pode adicionar no máximo 10 imagens.',
+        description: 'Você pode adicionar no máximo 18 imagens.',
       });
+      return;
+    }
+
+    // Validar tamanho dos arquivos (10MB = 10 * 1024 * 1024 bytes)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const filesTooLarge = newFiles.filter(file => file.size > maxSize);
+    
+    if (filesTooLarge.length > 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Arquivo muito grande',
+        description: `${filesTooLarge.length} arquivo(s) excede(m) o limite de 10MB. ` +
+          `Arquivo(s): ${filesTooLarge.map(f => f.name).join(', ')}`,
+      });
+      // Limpar input
+      e.target.value = '';
+      return;
+    }
+
+    // Validar tipos de arquivo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const invalidTypes = newFiles.filter(file => !allowedTypes.includes(file.type));
+    
+    if (invalidTypes.length > 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Tipo de arquivo inválido',
+        description: `Apenas JPEG, JPG, PNG e WEBP são permitidos. ` +
+          `Arquivo(s) inválido(s): ${invalidTypes.map(f => f.name).join(', ')}`,
+      });
+      e.target.value = '';
       return;
     }
 
@@ -170,6 +201,9 @@ export default function PropertyForm() {
       };
       reader.readAsDataURL(file);
     });
+
+    // Limpar input para permitir selecionar o mesmo arquivo novamente se necessário
+    e.target.value = '';
   };
 
   // Remover imagem
@@ -356,7 +390,10 @@ export default function PropertyForm() {
 
             {/* Upload de Imagens */}
             <div className="space-y-2">
-              <Label>Imagens (máximo 10)</Label>
+              <Label>Imagens (máximo 18 arquivos, 10MB por arquivo)</Label>
+              <p className="text-sm text-muted-foreground">
+                Formatos aceitos: JPEG, JPG, PNG, WEBP
+              </p>
               <div className="space-y-4">
                 {/* Preview de imagens */}
                 {previewImages.length > 0 && (
@@ -398,13 +435,13 @@ export default function PropertyForm() {
                     type="button"
                     variant="outline"
                     onClick={() => document.getElementById('fotos')?.click()}
-                    disabled={isLoading || previewImages.length >= 10}
+                    disabled={isLoading || previewImages.length >= 18}
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Adicionar Imagens
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                    {previewImages.length} / 10 imagens
+                    {previewImages.length} / 18 imagens
                   </span>
                 </div>
               </div>

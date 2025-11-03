@@ -7,10 +7,94 @@ import { NotFoundError } from '../utils/errors.js';
 
 const router = express.Router();
 
+// Middleware para tratamento de erros do multer
+const handleMulterError = (upload) => {
+    return (req, res, next) => {
+        upload(req, res, (err) => {
+            if (err) {
+                console.error('❌ Erro no upload de arquivos:', err.message);
+                console.error('Stack:', err.stack);
+                console.error('Detalhes do erro:', {
+                    code: err.code,
+                    field: err.field,
+                    name: err.name
+                });
+                
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    const maxSizeMB = 10;
+                    const fileName = err.field ? `O arquivo "${err.field}"` : 'Um arquivo';
+                    return res.status(400).json({
+                        error: 'Arquivo muito grande',
+                        message: `${fileName} excede o limite de ${maxSizeMB}MB. Por favor, comprima a imagem antes de enviar.`
+                    });
+                }
+                
+                if (err.code === 'LIMIT_FILE_COUNT') {
+                    return res.status(400).json({
+                        error: 'Muitos arquivos',
+                        message: 'O número máximo de arquivos é 18'
+                    });
+                }
+                
+                if (err.message && err.message.includes('Tipo de arquivo inválido')) {
+                    return res.status(400).json({
+                        error: 'Tipo de arquivo inválido',
+                        message: err.message
+                    });
+                }
+                
+                // Erros do S3/AWS
+                if (err.name === 'S3Client' || err.$metadata || err.Code || err.code === 'CredentialsError' || err.name === 'NoCredentialsError') {
+                    console.error('❌ Erro no S3/AWS:', err);
+                    console.error('   Detalhes:', {
+                        name: err.name,
+                        code: err.code,
+                        message: err.message,
+                        $metadata: err.$metadata,
+                        Code: err.Code
+                    });
+                    
+                    let errorMessage = 'Erro ao fazer upload para S3';
+                    if (err.name === 'NoCredentialsError' || err.code === 'CredentialsError') {
+                        errorMessage = 'Credenciais AWS não configuradas ou inválidas';
+                    } else if (err.Code === 'NoSuchBucket') {
+                        errorMessage = 'Bucket S3 não encontrado. Verifique se o bucket existe';
+                    } else if (err.Code === 'AccessDenied' || err.name === 'AccessDenied') {
+                        errorMessage = 'Acesso negado: O usuário IAM não tem permissão para fazer upload no S3. ' +
+                            'É necessário adicionar a permissão s3:PutObject no usuário IAM. ' +
+                            'Consulte o arquivo SOLUCAO_ACCESS_DENIED.md para instruções detalhadas.';
+                    }
+                    
+                    return res.status(500).json({
+                        error: 'Erro ao fazer upload para S3',
+                        message: process.env.NODE_ENV === 'development' ? err.message : errorMessage,
+                        details: process.env.NODE_ENV === 'development' ? {
+                            name: err.name,
+                            code: err.code,
+                            metadata: err.$metadata
+                        } : undefined
+                    });
+                }
+                
+                return res.status(500).json({
+                    error: 'Erro ao processar upload',
+                    message: process.env.NODE_ENV === 'development' ? err.message : 'Erro ao fazer upload de imagens'
+                });
+            }
+            next();
+        });
+    };
+};
+
 // Criar imovel (protegido)
-router.post('/imoveis', authenticateToken, uploadS3.array('fotos', 10), async (req, res, next) => {
+router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fotos', 18)), async (req, res, next) => {
     try {
-        console.log('Recebendo requisição POST /imoveis');
+        console.log('📥 Recebendo requisição POST /imoveis');
+        console.log('📦 Files recebidos:', req.files ? req.files.length : 0);
+        console.log('📋 Headers:', {
+            'content-type': req.headers['content-type'],
+            'content-length': req.headers['content-length']
+        });
         
         const { 
             titulo, 
@@ -25,10 +109,41 @@ router.post('/imoveis', authenticateToken, uploadS3.array('fotos', 10), async (r
             cidade
         } = req.body;
 
-        // URLs das fotos no S3
-        const fotos = req.files ? req.files.map(file => file.location) : [];
+        console.log('📝 Dados body recebidos:', {
+            titulo, 
+            codigo, 
+            subTitulo, 
+            descricaoCurta, 
+            descricaoLonga,
+            tipo,
+            finalidade,
+            valor,
+            endereco,
+            cidade
+        });
 
-        console.log('Dados recebidos:', {titulo, codigo, subTitulo, descricaoCurta, descricaoLonga, tipo, finalidade, valor, endereco, cidade, fotos});        
+        // URLs das fotos no S3
+        const fotos = req.files ? req.files.map(file => {
+            console.log('📸 Arquivo processado:', {
+                originalname: file.originalname,
+                location: file.location,
+                size: file.size,
+                mimetype: file.mimetype
+            });
+            return file.location;
+        }) : [];
+
+        console.log('🔗 URLs das fotos:', fotos);
+        
+        // Validações básicas
+        if (!titulo || !codigo || !tipo || !finalidade) {
+            return res.status(400).json({
+                error: 'Campos obrigatórios faltando',
+                message: 'Título, código, tipo e finalidade são obrigatórios'
+            });
+        }
+        
+        console.log('💾 Criando imóvel no banco de dados...');
         
         const response = await prisma.imovel.create({
             data: {
@@ -37,7 +152,7 @@ router.post('/imoveis', authenticateToken, uploadS3.array('fotos', 10), async (r
                 subTitulo, 
                 descricaoCurta, 
                 descricaoLonga,                
-                valor,
+                valor,   
                 endereco,
                 cidade,
                 fotos: fotos,
@@ -66,9 +181,16 @@ router.post('/imoveis', authenticateToken, uploadS3.array('fotos', 10), async (r
             }
         });
         
-        console.log('Imóvel criado:', response);
+        console.log('✅ Imóvel criado com sucesso:', response.id);
         res.status(201).json(response);
     } catch (error) {
+        console.error('❌ Erro ao criar imóvel:', error);
+        console.error('Erro completo:', {
+            message: error.message,
+            code: error.code,
+            meta: error.meta,
+            stack: error.stack
+        });
         next(error);
     }
 })
@@ -214,7 +336,7 @@ router.get('/imoveis/:codigo', async (req, res, next) => {
 });
 
 // Atualizar imovel (protegido)
-router.put('/imoveis/:id', authenticateToken, uploadS3.array('fotos', 10), async (req, res, next) => {
+router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadS3.array('fotos', 18)), async (req, res, next) => {
     try {
         console.log('Recebendo requisição PUT /imoveis');
 
