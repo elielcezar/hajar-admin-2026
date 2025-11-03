@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Imovel {
+  id              Int                 @id @default(autoincrement())
+  titulo          String
+  subTitulo       String?
+  descricaoCurta  String?             @db.Text
+  descricaoLonga  String?             @db.Text
+  fotos           Json                // Array de URLs das fotos no S3
+  cidade          String?
+  valor           String?
+  codigo          String              @unique
+  endereco        String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  tipo            ImovelTipo[]
+  finalidade      ImovelFinalidade[]
+  categorias      ImovelCategoria[]
+
+  @@map("imoveis")
+  @@index([codigo])
+  @@index([cidade])
+}
+
+model Tipo {
+  id        Int          @id @default(autoincrement())
+  nome      String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  imoveis   ImovelTipo[]
+
+  @@map("tipos")
+}
+
+model ImovelTipo {
+  id        Int      @id @default(autoincrement())
+  imovelId  Int
+  tipoId    Int
+  imovel    Imovel   @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  tipo      Tipo     @relation(fields: [tipoId], references: [id], onDelete: Cascade)
+
+  @@unique([imovelId, tipoId])
+  @@map("imovel_tipos")
+}
+
+model Finalidade {
+  id        Int                @id @default(autoincrement())
+  nome      String             @unique
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  imoveis   ImovelFinalidade[]
+
+  @@map("finalidades")
+}
+
+model ImovelFinalidade {
+  id            Int         @id @default(autoincrement())
+  imovelId      Int
+  finalidadeId  Int
+  imovel        Imovel      @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  finalidade    Finalidade  @relation(fields: [finalidadeId], references: [id], onDelete: Cascade)
+
+  @@unique([imovelId, finalidadeId])
+  @@map("imovel_finalidades")
+}
+
+model Categoria {
+  id        Int               @id @default(autoincrement())
+  nome      String            @unique
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  imoveis   ImovelCategoria[]
+
+  @@map("categorias")
+}
+
+model ImovelCategoria {
+  id          Int       @id @default(autoincrement())
+  imovelId    Int
+  categoriaId Int
+  imovel      Imovel    @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+
+  @@unique([imovelId, categoriaId])
+  @@map("imovel_categorias")
+}
