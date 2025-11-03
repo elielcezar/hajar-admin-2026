@@ -18,9 +18,37 @@ const PORT = process.env.PORT || 3000;
 // Middlewares globais
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Configuração CORS - aceitar múltiplas origens
+const allowedOrigins = process.env.FRONTEND_URL 
+    ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+    : ['*'];
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
-    credentials: true
+    origin: (origin, callback) => {
+        // Sem origin (ex: requisições mobile, Postman) - permitir
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        // Se permitir tudo ou origem está na lista, permitir
+        if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        // Em desenvolvimento, sempre permitir
+        if (process.env.NODE_ENV !== 'production') {
+            return callback(null, true);
+        }
+
+        // Em produção, bloquear se não está na lista
+        callback(new Error(`Not allowed by CORS: ${origin}`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    maxAge: 86400 // 24 horas para cache de preflight
 }));
 
 // Rota de health check
@@ -57,6 +85,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
     console.log(`\n🚀 Servidor rodando na porta ${PORT}`);
     console.log(`📍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🌐 Frontend permitido: ${process.env.FRONTEND_URL || 'Todos (*)'}`);
     console.log(`🔗 Health check: http://localhost:${PORT}/health`);
     console.log(`📡 API Base URL: http://localhost:${PORT}/api\n`);
 });
