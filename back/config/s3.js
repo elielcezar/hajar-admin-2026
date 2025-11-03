@@ -17,7 +17,15 @@ console.log('  🔐 Secret Key:', AWS_SECRET_ACCESS_KEY ? '***CONFIGURADO***' : 
 console.log('  🪣 Bucket:', AWS_S3_BUCKET || 'NÃO CONFIGURADO');
 
 if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_S3_BUCKET) {
-    console.warn('⚠️  AVISO: Credenciais AWS não configuradas completamente. Uploads podem falhar.');
+    console.error('❌ ERRO: Credenciais AWS não configuradas completamente!');
+    console.error('   Variáveis faltando:');
+    if (!AWS_REGION) console.error('     - AWS_REGION');
+    if (!AWS_ACCESS_KEY_ID) console.error('     - AWS_ACCESS_KEY_ID');
+    if (!AWS_SECRET_ACCESS_KEY) console.error('     - AWS_SECRET_ACCESS_KEY');
+    if (!AWS_S3_BUCKET) console.error('     - AWS_S3_BUCKET');
+    console.error('   ⚠️  Uploads para S3 irão falhar até que todas as variáveis sejam configuradas.');
+} else {
+    console.log('✅ Credenciais AWS configuradas corretamente');
 }
 
 // Configuração do cliente S3
@@ -34,7 +42,8 @@ export const uploadS3 = multer({
   storage: multerS3({
     s3: s3Client,
     bucket: AWS_S3_BUCKET,
-    acl: 'public-read', // Tornar objetos públicos para leitura
+    // ACL removido - buckets modernos da AWS não permitem ACLs por padrão
+    // Use política de bucket para tornar objetos públicos ao invés de ACLs
     contentType: multerS3.AUTO_CONTENT_TYPE,
     metadata: (req, file, cb) => {
       cb(null, { fieldName: file.fieldname });

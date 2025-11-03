@@ -43,36 +43,61 @@ const handleMulterError = (upload) => {
                     });
                 }
                 
-                // Erros do S3/AWS
-                if (err.name === 'S3Client' || err.$metadata || err.Code || err.code === 'CredentialsError' || err.name === 'NoCredentialsError') {
+                // Erros do S3/AWS - capturar qualquer erro relacionado ao S3
+                const isS3Error = err.name === 'S3Client' || 
+                                 err.$metadata || 
+                                 err.Code || 
+                                 err.code === 'CredentialsError' || 
+                                 err.name === 'NoCredentialsError' ||
+                                 err.name === 'AccessDenied' ||
+                                 err.code === 'AccessDenied' ||
+                                 err.message?.includes('S3') ||
+                                 err.message?.includes('AWS') ||
+                                 err.message?.includes('bucket') ||
+                                 err.stack?.includes('s3') ||
+                                 err.stack?.includes('S3');
+                
+                if (isS3Error) {
                     console.error('❌ Erro no S3/AWS:', err);
-                    console.error('   Detalhes:', {
-                        name: err.name,
-                        code: err.code,
-                        message: err.message,
-                        $metadata: err.$metadata,
-                        Code: err.Code
-                    });
-                    
-                    let errorMessage = 'Erro ao fazer upload para S3';
-                    if (err.name === 'NoCredentialsError' || err.code === 'CredentialsError') {
-                        errorMessage = 'Credenciais AWS não configuradas ou inválidas';
-                    } else if (err.Code === 'NoSuchBucket') {
-                        errorMessage = 'Bucket S3 não encontrado. Verifique se o bucket existe';
-                    } else if (err.Code === 'AccessDenied' || err.name === 'AccessDenied') {
-                        errorMessage = 'Acesso negado: O usuário IAM não tem permissão para fazer upload no S3. ' +
-                            'É necessário adicionar a permissão s3:PutObject no usuário IAM. ' +
-                            'Consulte o arquivo SOLUCAO_ACCESS_DENIED.md para instruções detalhadas.';
+                    console.error('   Tipo:', err.name || err.constructor?.name);
+                    console.error('   Código:', err.code || err.Code);
+                    console.error('   Mensagem:', err.message);
+                    console.error('   Stack completo:', err.stack);
+                    if (err.$metadata) {
+                        console.error('   Metadata:', JSON.stringify(err.$metadata, null, 2));
                     }
                     
-                    return res.status(500).json({
+                    let errorMessage = 'Erro ao fazer upload para S3';
+                    let statusCode = 500;
+                    
+                    if (err.name === 'NoCredentialsError' || err.code === 'CredentialsError' || err.message?.includes('credentials')) {
+                        errorMessage = 'Credenciais AWS não configuradas ou inválidas. Verifique as variáveis AWS_ACCESS_KEY_ID e AWS_SECRET_ACCESS_KEY no servidor.';
+                        statusCode = 500;
+                    } else if (err.Code === 'NoSuchBucket' || err.message?.includes('bucket') || err.message?.includes('does not exist')) {
+                        errorMessage = `Bucket S3 não encontrado. Verifique se o bucket "${process.env.AWS_S3_BUCKET}" existe na região ${process.env.AWS_REGION}.`;
+                        statusCode = 500;
+                    } else if (err.Code === 'AccessDenied' || err.name === 'AccessDenied' || err.message?.includes('Access Denied') || err.message?.includes('not authorized')) {
+                        errorMessage = 'Acesso negado ao S3. O usuário IAM não tem permissão s3:PutObject. Verifique as permissões IAM.';
+                        statusCode = 403;
+                    } else if (err.message?.includes('region') || err.message?.includes('Região')) {
+                        errorMessage = `Erro de região AWS. Verifique se a região "${process.env.AWS_REGION}" está correta.`;
+                        statusCode = 500;
+                    } else if (err.Code === 'AccessControlListNotSupported' || err.name === 'AccessControlListNotSupported' || err.message?.includes('does not allow ACLs')) {
+                        errorMessage = 'O bucket S3 não permite ACLs. Remova a configuração ACL do código e use política de bucket para acesso público.';
+                        statusCode = 400;
+                    } else {
+                        // Em produção, sempre mostrar a mensagem de erro real para debug
+                        errorMessage = `Erro S3: ${err.message || 'Erro desconhecido'}`;
+                    }
+                    
+                    return res.status(statusCode).json({
                         error: 'Erro ao fazer upload para S3',
-                        message: process.env.NODE_ENV === 'development' ? err.message : errorMessage,
-                        details: process.env.NODE_ENV === 'development' ? {
-                            name: err.name,
-                            code: err.code,
-                            metadata: err.$metadata
-                        } : undefined
+                        message: errorMessage,
+                        // Em produção também mostrar detalhes básicos para facilitar debug
+                        details: {
+                            type: err.name || err.constructor?.name,
+                            code: err.code || err.Code || 'N/A'
+                        }
                     });
                 }
                 
