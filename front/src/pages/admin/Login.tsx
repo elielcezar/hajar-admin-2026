@@ -4,9 +4,10 @@ import { adminAuth } from '@/lib/admin-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader} from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Building2 } from 'lucide-react';
+import logo from '@/assets/logo.png';
+
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -56,13 +57,7 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 flex flex-col items-center">
-          <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-2">
-            <Building2 className="h-6 w-6 text-primary-foreground" />
-          </div>
-          <CardTitle className="text-2xl text-center">Admin Imobiliária</CardTitle>
-          <CardDescription className="text-center">
-            Faça login para acessar o painel administrativo
-          </CardDescription>
+          <img src={logo} alt="Logo" className="mt-5" />
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

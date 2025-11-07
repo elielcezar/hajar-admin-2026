@@ -13,9 +13,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar';
+
 import { Building2, Users, LogOut, LayoutDashboard, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import logo from '@/assets/logo.png';
+
 
 const menuItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
@@ -54,9 +57,8 @@ export function AdminLayout() {
       <div className="min-h-screen flex w-full">
         <Sidebar>
           <SidebarContent>
-            <div className="p-4 border-b border-sidebar-border">
-              <h2 className="text-lg font-semibold text-sidebar-foreground">Admin Imobiliária</h2>
-              <p className="text-sm text-muted-foreground">{user?.name}</p>
+            <div className="p-4 border-b border-sidebar-border bg-white">
+              <img src={logo} alt="Logo" className="mt-4 mb-5 w-full max-w-52" />
             </div>
 
             <SidebarGroup>
