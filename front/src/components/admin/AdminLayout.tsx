@@ -16,8 +16,8 @@ import {
 
 import { Building2, Users, LogOut, LayoutDashboard, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import logo from '@/assets/logo.png';
+import logo from '@/assets/logo-w.png';
+/*import { ThemeToggle } from '@/components/ui/theme-toggle';*/
 
 
 const menuItems = [
@@ -57,7 +57,7 @@ export function AdminLayout() {
       <div className="min-h-screen flex w-full">
         <Sidebar>
           <SidebarContent>
-            <div className="p-4 border-b border-sidebar-border bg-white">
+            <div className="p-4 bg-oceanic text-oceanic-foreground">
               <img src={logo} alt="Logo" className="mt-4 mb-5 w-full max-w-52" />
             </div>
 
@@ -90,7 +90,7 @@ export function AdminLayout() {
             <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
               <Button
                 variant="ghost"
-                className="w-full justify-start"
+                className="w-full justify-start hover:bg-oceanic hover:text-oceanic-foreground"
                 onClick={() => navigate('/admin/perfil')}
               >
                 <User className="h-4 w-4 mr-2" />
@@ -98,7 +98,7 @@ export function AdminLayout() {
               </Button>
               <Button
                 variant="ghost"
-                className="w-full justify-start"
+                className="w-full justify-start hover:bg-oceanic hover:text-oceanic-foreground"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4 mr-2" />
@@ -110,8 +110,7 @@ export function AdminLayout() {
 
         <main className="flex-1 flex flex-col">
           <header className="h-14 border-b border-border bg-background flex items-center justify-between px-4">
-            <SidebarTrigger />
-            <ThemeToggle />
+            <SidebarTrigger />            
           </header>
           <div className="flex-1 p-6 bg-muted/30">
             <Outlet />

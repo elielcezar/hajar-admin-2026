@@ -27,6 +27,14 @@ export default {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
+        oceanic: {
+          DEFAULT: "hsl(var(--oceanic))",
+          foreground: "hsl(var(--oceanic-foreground))",
+        },
+        blood: {
+          DEFAULT: "hsl(var(--blood))",
+          foreground: "hsl(var(--blood-foreground))",
+        },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",

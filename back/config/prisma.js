@@ -1,5 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 
+// 🔍 DEBUG: Ver DATABASE_URL antes de criar o Prisma
+console.log('🔍 Prisma Config - DATABASE_URL:', process.env.DATABASE_URL?.substring(0, 30) + '...');
+
+
 // Instância singleton do Prisma para evitar múltiplas conexões
 let prisma;
 
