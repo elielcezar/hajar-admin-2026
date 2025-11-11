@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,20 @@ export function RichTextEditor({ content, onChange, className }: RichTextEditorP
       },
     },
   });
+
+  // Sincronizar conteúdo quando a prop muda (ex: ao carregar dados do backend)
+  useEffect(() => {
+    if (!editor) return;
+    
+    const currentContent = editor.getHTML();
+    // Normalizar comparação (TipTap pode adicionar <p></p> em strings vazias)
+    const normalizedCurrent = currentContent === '<p></p>' ? '' : currentContent;
+    const normalizedNew = content === '<p></p>' ? '' : content;
+    
+    if (normalizedNew !== normalizedCurrent) {
+      editor.commands.setContent(content || '');
+    }
+  }, [content, editor]);
 
   if (!editor) {
     return null;

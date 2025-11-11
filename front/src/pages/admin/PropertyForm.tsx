@@ -19,6 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, X, Upload } from 'lucide-react';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 export default function PropertyForm() {
   const { id } = useParams();
@@ -302,14 +303,14 @@ export default function PropertyForm() {
 
             <div className="space-y-2">
               <Label htmlFor="descricaoLonga">Descrição Completa</Label>
-              <Textarea
-                id="descricaoLonga"
-                value={formData.descricaoLonga}
-                onChange={(e) => handleChange('descricaoLonga', e.target.value)}
-                disabled={isLoading}
-                rows={5}
-                placeholder="Descrição detalhada do imóvel"
+              <RichTextEditor
+                content={formData.descricaoLonga}
+                onChange={(html) => handleChange('descricaoLonga', html)}
+                className={isLoading ? 'opacity-50 pointer-events-none' : ''}
               />
+              <p className="text-sm text-muted-foreground">
+                Use o editor para formatar o texto com negrito, itálico, listas e mais.
+              </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
