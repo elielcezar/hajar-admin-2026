@@ -28,10 +28,13 @@ model Imovel {
   descricaoCurta  String?             @db.Text
   descricaoLonga  String?             @db.Text
   fotos           Json                // Array de URLs das fotos no S3
+  cep             String?
+  endereco        String?
+  bairro          String?
   cidade          String?
+  estado          String?
   valor           String?
   codigo          String              @unique
-  endereco        String?
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
   tipo            ImovelTipo[]

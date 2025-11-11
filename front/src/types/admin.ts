@@ -30,8 +30,11 @@ export interface Property {
   descricaoLonga?: string;
   fotos: string[]; // URLs do S3
   valor?: string;
+  cep?: string;
   endereco?: string;
+  bairro?: string;
   cidade?: string;
+  estado?: string;
   createdAt: string;
   updatedAt: string;
   tipo?: {
@@ -58,8 +61,11 @@ export interface PropertyFormData {
   tipo: string; // ID do tipo
   finalidade: string; // ID da finalidade
   valor?: string;
+  cep?: string;
   endereco?: string;
+  bairro?: string;
   cidade?: string;
+  estado?: string;
   fotos?: File[]; // Arquivos para upload
   oldPhotos?: string[]; // URLs existentes
 }

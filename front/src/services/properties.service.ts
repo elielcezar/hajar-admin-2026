@@ -52,8 +52,11 @@ export const propertiesService = {
       if (data.descricaoCurta) formData.append('descricaoCurta', data.descricaoCurta);
       if (data.descricaoLonga) formData.append('descricaoLonga', data.descricaoLonga);
       if (data.valor) formData.append('valor', data.valor);
+      if (data.cep) formData.append('cep', data.cep);
       if (data.endereco) formData.append('endereco', data.endereco);
+      if (data.bairro) formData.append('bairro', data.bairro);
       if (data.cidade) formData.append('cidade', data.cidade);
+      if (data.estado) formData.append('estado', data.estado);
       formData.append('tipo', data.tipo);
       formData.append('finalidade', data.finalidade);
 
@@ -90,8 +93,11 @@ export const propertiesService = {
       if (data.descricaoCurta) formData.append('descricaoCurta', data.descricaoCurta);
       if (data.descricaoLonga) formData.append('descricaoLonga', data.descricaoLonga);
       if (data.valor) formData.append('valor', data.valor);
+      if (data.cep) formData.append('cep', data.cep);
       if (data.endereco) formData.append('endereco', data.endereco);
+      if (data.bairro) formData.append('bairro', data.bairro);
       if (data.cidade) formData.append('cidade', data.cidade);
+      if (data.estado) formData.append('estado', data.estado);
       if (data.tipo) formData.append('tipo', data.tipo);
       if (data.finalidade) formData.append('finalidade', data.finalidade);
 

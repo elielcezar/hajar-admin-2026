@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, X, Upload } from 'lucide-react';
+import { ArrowLeft, Loader2, X, Upload, Search } from 'lucide-react';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 export default function PropertyForm() {
@@ -37,13 +37,17 @@ export default function PropertyForm() {
     tipo: '',
     finalidade: '',
     valor: '',
+    cep: '',
     endereco: '',
+    bairro: '',
     cidade: '',
+    estado: '',
     fotos: [],
     oldPhotos: [],
   });
 
   const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [loadingCep, setLoadingCep] = useState(false);
 
   // Buscar tipos
   const { data: tipos } = useQuery({
@@ -75,8 +79,11 @@ export default function PropertyForm() {
         tipo: property.tipo?.[0]?.tipo.id.toString() || '',
         finalidade: property.finalidade?.[0]?.finalidade.id.toString() || '',
         valor: property.valor || '',
+        cep: property.cep || '',
         endereco: property.endereco || '',
+        bairro: property.bairro || '',
         cidade: property.cidade || '',
+        estado: property.estado || '',
         fotos: [],
         oldPhotos: property.fotos || [],
       });
@@ -138,6 +145,64 @@ export default function PropertyForm() {
 
   const handleChange = (field: keyof PropertyFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Formatar CEP (XXXXX-XXX)
+  const formatCep = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 5) {
+      return numbers;
+    }
+    return `${numbers.slice(0, 5)}-${numbers.slice(5, 8)}`;
+  };
+
+  // Buscar endereço pelo CEP
+  const handleCepChange = async (value: string) => {
+    const formattedCep = formatCep(value);
+    handleChange('cep', formattedCep);
+
+    const numbersOnly = value.replace(/\D/g, '');
+    
+    // Só busca quando tiver 8 dígitos
+    if (numbersOnly.length === 8) {
+      setLoadingCep(true);
+      
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${numbersOnly}/json/`);
+        const data = await response.json();
+
+        if (data.erro) {
+          toast({
+            variant: 'destructive',
+            title: 'CEP não encontrado',
+            description: 'O CEP informado não foi encontrado na base de dados.',
+          });
+          return;
+        }
+
+        // Preencher os campos automaticamente
+        setFormData((prev) => ({
+          ...prev,
+          endereco: data.logradouro || prev.endereco,
+          bairro: data.bairro || prev.bairro,
+          cidade: data.localidade || prev.cidade,
+          estado: data.uf || prev.estado,
+        }));
+
+        toast({
+          title: 'CEP encontrado!',
+          description: 'Endereço preenchido automaticamente.',
+        });
+      } catch (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao buscar CEP',
+          description: 'Não foi possível buscar o endereço. Tente novamente.',
+        });
+      } finally {
+        setLoadingCep(false);
+      }
+    }
   };
 
   // Handler para upload de imagens
@@ -367,26 +432,78 @@ export default function PropertyForm() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="endereco">Endereço</Label>
-              <Input
-                id="endereco"
-                value={formData.endereco}
-                onChange={(e) => handleChange('endereco', e.target.value)}
-                disabled={isLoading}
-                placeholder="Rua das Flores, 123"
-              />
-            </div>
+            {/* Seção de Endereço com CEP */}
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="text-lg font-semibold">Localização</h3>
+              
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="cep">CEP</Label>
+                  <div className="relative">
+                    <Input
+                      id="cep"
+                      value={formData.cep}
+                      onChange={(e) => handleCepChange(e.target.value)}
+                      disabled={isLoading || loadingCep}
+                      placeholder="00000-000"
+                      maxLength={9}
+                    />
+                    {loadingCep && (
+                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Preenche automaticamente o endereço
+                  </p>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cidade">Cidade</Label>
-              <Input
-                id="cidade"
-                value={formData.cidade}
-                onChange={(e) => handleChange('cidade', e.target.value)}
-                disabled={isLoading}
-                placeholder="São Paulo"
-              />
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="endereco">Endereço</Label>
+                  <Input
+                    id="endereco"
+                    value={formData.endereco}
+                    onChange={(e) => handleChange('endereco', e.target.value)}
+                    disabled={isLoading}
+                    placeholder="Rua das Flores, 123"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="bairro">Bairro</Label>
+                  <Input
+                    id="bairro"
+                    value={formData.bairro}
+                    onChange={(e) => handleChange('bairro', e.target.value)}
+                    disabled={isLoading}
+                    placeholder="Centro"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cidade">Cidade</Label>
+                  <Input
+                    id="cidade"
+                    value={formData.cidade}
+                    onChange={(e) => handleChange('cidade', e.target.value)}
+                    disabled={isLoading}
+                    placeholder="São Paulo"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="estado">Estado</Label>
+                  <Input
+                    id="estado"
+                    value={formData.estado}
+                    onChange={(e) => handleChange('estado', e.target.value)}
+                    disabled={isLoading}
+                    placeholder="SP"
+                    maxLength={2}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Upload de Imagens */}

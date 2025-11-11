@@ -58,8 +58,11 @@ export const imovelCreateSchema = z.object({
   tipo: z.string().min(1, 'Tipo é obrigatório'),
   finalidade: z.string().min(1, 'Finalidade é obrigatória'),
   valor: z.string().optional(),
+  cep: z.string().optional(),
   endereco: z.string().optional(),
+  bairro: z.string().optional(),
   cidade: z.string().optional(),
+  estado: z.string().optional(),
 });
 
 export const categoriaSchema = z.object({
