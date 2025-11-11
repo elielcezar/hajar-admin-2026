@@ -35,6 +35,8 @@ export interface Property {
   bairro?: string;
   cidade?: string;
   estado?: string;
+  latitude?: number;
+  longitude?: number;
   createdAt: string;
   updatedAt: string;
   tipo?: {
@@ -66,6 +68,8 @@ export interface PropertyFormData {
   bairro?: string;
   cidade?: string;
   estado?: string;
+  latitude?: number;
+  longitude?: number;
   fotos?: File[]; // Arquivos para upload
   oldPhotos?: string[]; // URLs existentes
 }

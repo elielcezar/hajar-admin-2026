@@ -155,7 +155,14 @@ npx prisma studio
 
 ```env
 VITE_API_BASE_URL=http://localhost:3000/api
+VITE_GOOGLE_MAPS_API_KEY=sua-google-maps-api-key-aqui
 ```
+
+**Obter Google Maps API Key:**
+- Acesse [Google Cloud Console](https://console.cloud.google.com/)
+- Crie um projeto e ative as APIs: **Maps JavaScript API** e **Geocoding API**
+- Crie uma chave de API em **Credenciais**
+- Adicione a chave no `.env` acima
 
 ---
 
@@ -207,7 +214,10 @@ O frontend estará rodando em: `http://localhost:5173`
 - Exclusão de imóveis
 - Upload múltiplo de imagens (até 10 por imóvel)
 - Preview de imagens
-- Campos: título, código, descrições, valor, localização, tipo, finalidade
+- **Integração com Google Maps** - Localização automática no mapa
+- **Integração com ViaCEP** - Preenchimento automático de endereço
+- Campos: título, código, descrições, valor, localização completa (CEP, endereço, bairro, cidade, estado)
+- Armazenamento de coordenadas (latitude/longitude)
 
 ### ✅ Gestão de Usuários
 - Listagem de usuários
@@ -333,6 +343,8 @@ npm run lint         # Executa linter
 
 ## 📚 Documentação Adicional
 
+- [Migração Google Maps](./MIGRATION_GOOGLE_MAPS.md) - **NOVO** - Integração com Google Maps
+- [Migração CEP](./back/MIGRATION_CEP.md) - Integração com ViaCEP
 - [Status da Integração](./front/INTEGRATION_STATUS.md) - Detalhes da integração frontend/backend
 - [Schema do Banco](./back/prisma/schema.prisma) - Estrutura do banco de dados
 - [Prisma Docs](https://www.prisma.io/docs)

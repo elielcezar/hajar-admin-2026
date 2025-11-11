@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, X, Upload, Search } from 'lucide-react';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { GoogleMap } from '@/components/ui/google-map';
 
 export default function PropertyForm() {
   const { id } = useParams();
@@ -42,12 +43,23 @@ export default function PropertyForm() {
     bairro: '',
     cidade: '',
     estado: '',
+    latitude: undefined,
+    longitude: undefined,
     fotos: [],
     oldPhotos: [],
   });
 
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [loadingCep, setLoadingCep] = useState(false);
+
+  // Callback para atualizar coordenadas quando o mapa fizer geocoding
+  const handleLocationChange = (lat: number, lng: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+    }));
+  };
 
   // Buscar tipos
   const { data: tipos } = useQuery({
@@ -84,6 +96,8 @@ export default function PropertyForm() {
         bairro: property.bairro || '',
         cidade: property.cidade || '',
         estado: property.estado || '',
+        latitude: property.latitude,
+        longitude: property.longitude,
         fotos: [],
         oldPhotos: property.fotos || [],
       });
@@ -504,6 +518,15 @@ export default function PropertyForm() {
                   />
                 </div>
               </div>
+
+              {/* Mapa do Google Maps */}
+              <GoogleMap
+                address={formData.endereco || ''}
+                city={formData.cidade}
+                state={formData.estado}
+                cep={formData.cep}
+                onLocationChange={handleLocationChange}
+              />
             </div>
 
             {/* Upload de Imagens */}

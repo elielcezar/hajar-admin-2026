@@ -134,7 +134,9 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
             endereco,
             bairro,
             cidade,
-            estado
+            estado,
+            latitude,
+            longitude
         } = req.body;
 
         console.log('📝 Dados body recebidos:', {
@@ -150,7 +152,9 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
             endereco,
             bairro,
             cidade,
-            estado
+            estado,
+            latitude,
+            longitude
         });
 
         // URLs das fotos no S3
@@ -189,6 +193,8 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
                 bairro,
                 cidade,
                 estado,
+                latitude: latitude ? parseFloat(latitude) : null,
+                longitude: longitude ? parseFloat(longitude) : null,
                 fotos: fotos,
                 tipo: {
                     create: [{
@@ -389,6 +395,8 @@ router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadS3.array('
             bairro,
             cidade,
             estado,
+            latitude,
+            longitude,
             oldPhotos
         } = req.body;
 
@@ -423,6 +431,8 @@ router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadS3.array('
             bairro,
             cidade,
             estado,
+            latitude: latitude ? parseFloat(latitude) : null,
+            longitude: longitude ? parseFloat(longitude) : null,
             fotos
         };
 

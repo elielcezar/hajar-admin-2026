@@ -33,6 +33,8 @@ model Imovel {
   bairro          String?
   cidade          String?
   estado          String?
+  latitude        Float?              // Latitude para Google Maps
+  longitude       Float?              // Longitude para Google Maps
   valor           String?
   codigo          String              @unique
   createdAt       DateTime            @default(now())

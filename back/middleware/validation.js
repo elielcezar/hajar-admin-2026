@@ -63,6 +63,8 @@ export const imovelCreateSchema = z.object({
   bairro: z.string().optional(),
   cidade: z.string().optional(),
   estado: z.string().optional(),
+  latitude: z.string().optional(),
+  longitude: z.string().optional(),
 });
 
 export const categoriaSchema = z.object({
