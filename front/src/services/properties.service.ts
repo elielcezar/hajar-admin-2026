@@ -57,8 +57,18 @@ export const propertiesService = {
       if (data.bairro) formData.append('bairro', data.bairro);
       if (data.cidade) formData.append('cidade', data.cidade);
       if (data.estado) formData.append('estado', data.estado);
-      if (data.latitude !== undefined) formData.append('latitude', data.latitude.toString());
-      if (data.longitude !== undefined) formData.append('longitude', data.longitude.toString());
+      if (data.latitude !== undefined) {
+        console.log('✅ Adicionando latitude ao FormData:', data.latitude);
+        formData.append('latitude', data.latitude.toString());
+      } else {
+        console.warn('⚠️ Latitude está undefined, não será enviada!');
+      }
+      if (data.longitude !== undefined) {
+        console.log('✅ Adicionando longitude ao FormData:', data.longitude);
+        formData.append('longitude', data.longitude.toString());
+      } else {
+        console.warn('⚠️ Longitude está undefined, não será enviada!');
+      }
       formData.append('tipo', data.tipo);
       formData.append('finalidade', data.finalidade);
 
@@ -68,6 +78,11 @@ export const propertiesService = {
           formData.append('fotos', file);
         });
       }
+
+      console.log('📦 FormData pronto para enviar. Conferindo coordenadas:', {
+        latitude: formData.get('latitude'),
+        longitude: formData.get('longitude')
+      });
 
       const response = await apiClient.post<Property>('/imoveis', formData, {
         headers: {
@@ -100,8 +115,18 @@ export const propertiesService = {
       if (data.bairro) formData.append('bairro', data.bairro);
       if (data.cidade) formData.append('cidade', data.cidade);
       if (data.estado) formData.append('estado', data.estado);
-      if (data.latitude !== undefined) formData.append('latitude', data.latitude.toString());
-      if (data.longitude !== undefined) formData.append('longitude', data.longitude.toString());
+      if (data.latitude !== undefined) {
+        console.log('✅ [UPDATE] Adicionando latitude ao FormData:', data.latitude);
+        formData.append('latitude', data.latitude.toString());
+      } else {
+        console.warn('⚠️ [UPDATE] Latitude está undefined, não será enviada!');
+      }
+      if (data.longitude !== undefined) {
+        console.log('✅ [UPDATE] Adicionando longitude ao FormData:', data.longitude);
+        formData.append('longitude', data.longitude.toString());
+      } else {
+        console.warn('⚠️ [UPDATE] Longitude está undefined, não será enviada!');
+      }
       if (data.tipo) formData.append('tipo', data.tipo);
       if (data.finalidade) formData.append('finalidade', data.finalidade);
 
@@ -116,6 +141,11 @@ export const propertiesService = {
           formData.append('fotos', file);
         });
       }
+
+      console.log('📦 [UPDATE] FormData pronto para enviar. Conferindo coordenadas:', {
+        latitude: formData.get('latitude'),
+        longitude: formData.get('longitude')
+      });
 
       const response = await apiClient.put<Property>(`/imoveis/${id}`, formData, {
         headers: {

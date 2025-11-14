@@ -54,6 +54,7 @@ export default function PropertyForm() {
 
   // Callback para atualizar coordenadas quando o mapa fizer geocoding
   const handleLocationChange = (lat: number, lng: number) => {
+    console.log('🗺️ GoogleMap retornou coordenadas:', { lat, lng });
     setFormData((prev) => ({
       ...prev,
       latitude: lat,
@@ -149,6 +150,16 @@ export default function PropertyForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('📤 Enviando formulário com dados:', {
+      ...formData,
+      fotos: formData.fotos?.length || 0,
+      oldPhotos: formData.oldPhotos?.length || 0
+    });
+    console.log('📍 Coordenadas no momento do envio:', {
+      latitude: formData.latitude,
+      longitude: formData.longitude
+    });
 
     if (isEdit) {
       updateMutation.mutate(formData);
