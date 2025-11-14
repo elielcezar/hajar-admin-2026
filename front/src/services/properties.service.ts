@@ -57,6 +57,8 @@ export const propertiesService = {
       if (data.bairro) formData.append('bairro', data.bairro);
       if (data.cidade) formData.append('cidade', data.cidade);
       if (data.estado) formData.append('estado', data.estado);
+      if (data.latitude !== undefined) formData.append('latitude', data.latitude.toString());
+      if (data.longitude !== undefined) formData.append('longitude', data.longitude.toString());
       formData.append('tipo', data.tipo);
       formData.append('finalidade', data.finalidade);
 
@@ -98,6 +100,8 @@ export const propertiesService = {
       if (data.bairro) formData.append('bairro', data.bairro);
       if (data.cidade) formData.append('cidade', data.cidade);
       if (data.estado) formData.append('estado', data.estado);
+      if (data.latitude !== undefined) formData.append('latitude', data.latitude.toString());
+      if (data.longitude !== undefined) formData.append('longitude', data.longitude.toString());
       if (data.tipo) formData.append('tipo', data.tipo);
       if (data.finalidade) formData.append('finalidade', data.finalidade);
 
