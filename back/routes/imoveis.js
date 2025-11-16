@@ -7,6 +7,8 @@ import { NotFoundError } from '../utils/errors.js';
 
 const router = express.Router();
 
+const baseUrl = 'https://novo.hajar.com.br';
+
 // Middleware para tratamento de erros do multer
 const handleMulterError = (upload) => {
     return (req, res, next) => {
@@ -287,9 +289,15 @@ router.get('/imoveis', async (req, res, next) => {
                 createdAt: 'desc'
             }
         });
+                
+        const imovelCompleto = imoveis.map(imovel => ({
+            ...imovel,
+            url: `${baseUrl}/imoveis/${imovel.id}`
+        }));
 
-        console.log(`Imóveis encontrados: ${imoveis.length}`);
-        res.status(200).json(imoveis);
+        console.log(`Imóveis encontrados: ${imovelCompleto.length}`);
+        res.status(200).json(imovelCompleto);
+        
     } catch (error) {
         next(error);
     }
