@@ -126,37 +126,53 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
         const { 
             titulo, 
             codigo, 
-            subTitulo, 
             descricaoCurta, 
             descricaoLonga,
             tipo,
             finalidade,
             valor,
+            valorPromo,
             cep,
             endereco,
             bairro,
             cidade,
             estado,
             latitude,
-            longitude
+            longitude,
+            suites,
+            dormitorios,
+            banheiros,
+            garagem,
+            geminada,
+            terrenoMedidas,
+            terrenoM2,
+            areaConstruida
         } = req.body;
 
         console.log('📝 Dados body recebidos:', {
             titulo, 
             codigo, 
-            subTitulo, 
             descricaoCurta, 
             descricaoLonga,
             tipo,
             finalidade,
             valor,
+            valorPromo,
             cep,
             endereco,
             bairro,
             cidade,
             estado,
             latitude,
-            longitude
+            longitude,
+            suites,
+            dormitorios,
+            banheiros,
+            garagem,
+            geminada,
+            terrenoMedidas,
+            terrenoM2,
+            areaConstruida
         });
 
         // URLs das fotos no S3
@@ -186,10 +202,10 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
             data: {
                 titulo, 
                 codigo, 
-                subTitulo, 
                 descricaoCurta, 
                 descricaoLonga,                
-                valor,
+                valor: valor ? parseFloat(valor) : null,
+                valorPromo: valorPromo ? parseFloat(valorPromo) : null,
                 cep,
                 endereco,
                 bairro,
@@ -197,6 +213,14 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
                 estado,
                 latitude: latitude ? parseFloat(latitude) : null,
                 longitude: longitude ? parseFloat(longitude) : null,
+                suites: suites ? parseInt(suites) : null,
+                dormitorios: dormitorios ? parseInt(dormitorios) : null,
+                banheiros: banheiros ? parseInt(banheiros) : null,
+                garagem: garagem === 'true',
+                geminada: geminada === 'true',
+                terrenoMedidas,
+                terrenoM2: terrenoM2 ? parseInt(terrenoM2) : null,
+                areaConstruida: areaConstruida ? parseInt(areaConstruida) : null,
                 fotos: fotos,
                 tipo: {
                     create: [{
@@ -349,7 +373,7 @@ router.get('/imoveis/:codigo', async (req, res, next) => {
         console.log('Código:', req.params.codigo);
 
         const { codigo } = req.params;
-        const imovel = await prisma.imovel.findUnique({
+        const imovel = await prisma.imovel.findFirst({
             where: {
                 codigo: codigo
             },
@@ -392,12 +416,12 @@ router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadS3.array('
         const {
             titulo,
             codigo,
-            subTitulo,
             descricaoCurta,
             descricaoLonga,
             tipo,
             finalidade,
             valor,
+            valorPromo,
             cep,
             endereco,
             bairro,
@@ -405,6 +429,14 @@ router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadS3.array('
             estado,
             latitude,
             longitude,
+            suites,
+            dormitorios,
+            banheiros,
+            garagem,
+            geminada,
+            terrenoMedidas,
+            terrenoM2,
+            areaConstruida,
             oldPhotos
         } = req.body;
 
@@ -427,22 +459,33 @@ router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadS3.array('
             fotos = [...fotos, ...novasFotos];
         }
 
+        // Construir objeto de dados apenas com campos definidos
         const data = {
-            titulo,
-            codigo,
-            subTitulo,
-            descricaoCurta,
-            descricaoLonga,
-            valor,
-            cep,
-            endereco,
-            bairro,
-            cidade,
-            estado,
-            latitude: latitude ? parseFloat(latitude) : null,
-            longitude: longitude ? parseFloat(longitude) : null,
-            fotos
+            fotos // fotos sempre será atualizado (array vazio ou com URLs)
         };
+
+        // Adicionar campos somente se foram enviados
+        if (titulo !== undefined) data.titulo = titulo;
+        if (codigo !== undefined) data.codigo = codigo;
+        if (descricaoCurta !== undefined) data.descricaoCurta = descricaoCurta;
+        if (descricaoLonga !== undefined) data.descricaoLonga = descricaoLonga;
+        if (valor !== undefined) data.valor = valor ? parseFloat(valor) : null;
+        if (valorPromo !== undefined) data.valorPromo = valorPromo ? parseFloat(valorPromo) : null;
+        if (cep !== undefined) data.cep = cep;
+        if (endereco !== undefined) data.endereco = endereco;
+        if (bairro !== undefined) data.bairro = bairro;
+        if (cidade !== undefined) data.cidade = cidade;
+        if (estado !== undefined) data.estado = estado;
+        if (latitude !== undefined) data.latitude = latitude ? parseFloat(latitude) : null;
+        if (longitude !== undefined) data.longitude = longitude ? parseFloat(longitude) : null;
+        if (suites !== undefined) data.suites = suites ? parseInt(suites) : null;
+        if (dormitorios !== undefined) data.dormitorios = dormitorios ? parseInt(dormitorios) : null;
+        if (banheiros !== undefined) data.banheiros = banheiros ? parseInt(banheiros) : null;
+        if (garagem !== undefined) data.garagem = garagem === 'true';
+        if (geminada !== undefined) data.geminada = geminada === 'true';
+        if (terrenoMedidas !== undefined) data.terrenoMedidas = terrenoMedidas;
+        if (terrenoM2 !== undefined) data.terrenoM2 = terrenoM2 ? parseInt(terrenoM2) : null;
+        if (areaConstruida !== undefined) data.areaConstruida = areaConstruida ? parseInt(areaConstruida) : null;
 
         console.log('Atualizando imóvel com dados:', data);
 

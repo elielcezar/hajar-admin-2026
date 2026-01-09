@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, X, Upload, Search } from 'lucide-react';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { GoogleMap } from '@/components/ui/google-map';
+import CurrencyInput from 'react-currency-input-field';
 
 export default function PropertyForm() {
   const { id } = useParams();
@@ -32,12 +33,12 @@ export default function PropertyForm() {
   const [formData, setFormData] = useState<PropertyFormData>({
     titulo: '',
     codigo: '',
-    subTitulo: '',
     descricaoCurta: '',
     descricaoLonga: '',
     tipo: '',
     finalidade: '',
     valor: '',
+    valorPromo: '',
     cep: '',
     endereco: '',
     bairro: '',
@@ -45,6 +46,14 @@ export default function PropertyForm() {
     estado: '',
     latitude: undefined,
     longitude: undefined,
+    suites: undefined,
+    dormitorios: undefined,
+    banheiros: undefined,
+    garagem: false,
+    geminada: false,
+    terrenoMedidas: '',
+    terrenoM2: undefined,
+    areaConstruida: undefined,
     fotos: [],
     oldPhotos: [],
   });
@@ -86,12 +95,12 @@ export default function PropertyForm() {
       setFormData({
         titulo: property.titulo,
         codigo: property.codigo,
-        subTitulo: property.subTitulo || '',
         descricaoCurta: property.descricaoCurta || '',
         descricaoLonga: property.descricaoLonga || '',
         tipo: property.tipo?.[0]?.tipo.id.toString() || '',
         finalidade: property.finalidade?.[0]?.finalidade.id.toString() || '',
         valor: property.valor || '',
+        valorPromo: property.valorPromo || '',
         cep: property.cep || '',
         endereco: property.endereco || '',
         bairro: property.bairro || '',
@@ -99,6 +108,14 @@ export default function PropertyForm() {
         estado: property.estado || '',
         latitude: property.latitude,
         longitude: property.longitude,
+        suites: property.suites,
+        dormitorios: property.dormitorios,
+        banheiros: property.banheiros,
+        garagem: property.garagem || false,
+        geminada: property.geminada || false,
+        terrenoMedidas: property.terrenoMedidas || '',
+        terrenoM2: property.terrenoM2,
+        areaConstruida: property.areaConstruida,
         fotos: [],
         oldPhotos: property.fotos || [],
       });
@@ -196,6 +213,8 @@ export default function PropertyForm() {
         const response = await fetch(`https://viacep.com.br/ws/${numbersOnly}/json/`);
         const data = await response.json();
 
+        console.log('📍 Dados do ViaCEP:', data);
+
         if (data.erro) {
           toast({
             variant: 'destructive',
@@ -208,17 +227,27 @@ export default function PropertyForm() {
         // Preencher os campos automaticamente
         setFormData((prev) => ({
           ...prev,
-          endereco: data.logradouro || prev.endereco,
-          bairro: data.bairro || prev.bairro,
-          cidade: data.localidade || prev.cidade,
-          estado: data.uf || prev.estado,
+          endereco: data.logradouro || '',
+          bairro: data.bairro || '',
+          cidade: data.localidade || '',
+          estado: data.uf || '',
         }));
+
+        // Mostrar quais campos foram preenchidos
+        const camposPreenchidos = [];
+        if (data.logradouro) camposPreenchidos.push('Rua');
+        if (data.bairro) camposPreenchidos.push('Bairro');
+        if (data.localidade) camposPreenchidos.push('Cidade');
+        if (data.uf) camposPreenchidos.push('Estado');
 
         toast({
           title: 'CEP encontrado!',
-          description: 'Endereço preenchido automaticamente.',
+          description: camposPreenchidos.length > 0 
+            ? `Preenchido: ${camposPreenchidos.join(', ')}`
+            : 'CEP encontrado, mas sem dados de endereço disponíveis.',
         });
       } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
         toast({
           variant: 'destructive',
           title: 'Erro ao buscar CEP',
@@ -369,17 +398,6 @@ export default function PropertyForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="subTitulo">Subtítulo</Label>
-              <Input
-                id="subTitulo"
-                value={formData.subTitulo}
-                onChange={(e) => handleChange('subTitulo', e.target.value)}
-                disabled={isLoading}
-                placeholder="Ex: 3 quartos com suíte"
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="descricaoCurta">Descrição Curta</Label>
               <Textarea
                 id="descricaoCurta"
@@ -403,7 +421,7 @@ export default function PropertyForm() {
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-4">
               <div className="space-y-2">
                 <Label htmlFor="tipo">Tipo *</Label>
                 <Select
@@ -446,14 +464,157 @@ export default function PropertyForm() {
 
               <div className="space-y-2">
                 <Label htmlFor="valor">Valor (R$)</Label>
-                <Input
+                <CurrencyInput
                   id="valor"
-                  type="number"
+                  name="valor"
+                  placeholder=""
                   value={formData.valor}
-                  onChange={(e) => handleChange('valor', e.target.value)}
+                  onValueChange={(value) => handleChange('valor', value || '')}
+                  prefix="R$ "
+                  decimalSeparator=","
+                  groupSeparator="."
+                  decimalsLimit={2}
+                  allowNegativeValue={false}
                   disabled={isLoading}
-                  placeholder="450000"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="valorPromo">Valor Promocional (R$)</Label>
+                <CurrencyInput
+                  id="valorPromo"
+                  name="valorPromo"
+                  placeholder=""
+                  value={formData.valorPromo}
+                  onValueChange={(value) => handleChange('valorPromo', value || '')}
+                  prefix="R$ "
+                  decimalSeparator=","
+                  groupSeparator="."
+                  decimalsLimit={2}
+                  allowNegativeValue={false}
+                  disabled={isLoading}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+            </div>
+
+            {/* Seção de Características */}
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="text-lg font-semibold">Características do Imóvel</h3>
+              
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dormitorios">Dormitórios</Label>
+                  <Input
+                    id="dormitorios"
+                    type="number"
+                    min="0"
+                    value={formData.dormitorios ?? ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, dormitorios: e.target.value ? parseInt(e.target.value) : undefined }))}
+                    disabled={isLoading}
+                    placeholder=""
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="suites">Suítes</Label>
+                  <Input
+                    id="suites"
+                    type="number"
+                    min="0"
+                    value={formData.suites ?? ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, suites: e.target.value ? parseInt(e.target.value) : undefined }))}
+                    disabled={isLoading}
+                    placeholder=""
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="banheiros">Banheiros</Label>
+                  <Input
+                    id="banheiros"
+                    type="number"
+                    min="0"
+                    value={formData.banheiros ?? ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, banheiros: e.target.value ? parseInt(e.target.value) : undefined }))}
+                    disabled={isLoading}
+                    placeholder=""
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="garagem">Garagem</Label>
+                  <Select
+                    value={formData.garagem ? 'sim' : 'nao'}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, garagem: value === 'sim' }))}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Possui garagem?" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sim">Sim</SelectItem>
+                      <SelectItem value="nao">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="space-y-2">
+                  <Label htmlFor="geminada">Casa Geminada</Label>
+                  <Select
+                    value={formData.geminada ? 'sim' : 'nao'}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, geminada: value === 'sim' }))}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Casa geminada?" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sim">Sim</SelectItem>
+                      <SelectItem value="nao">Não</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="areaConstruida">Área Construída (m²)</Label>
+                  <Input
+                    id="areaConstruida"
+                    type="number"
+                    min="0"
+                    value={formData.areaConstruida ?? ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, areaConstruida: e.target.value ? parseInt(e.target.value) : undefined }))}
+                    disabled={isLoading}
+                    placeholder=""
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="terrenoM2">Terreno (m²)</Label>
+                  <Input
+                    id="terrenoM2"
+                    type="number"
+                    min="0"
+                    value={formData.terrenoM2 ?? ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, terrenoM2: e.target.value ? parseInt(e.target.value) : undefined }))}
+                    disabled={isLoading}
+                    placeholder=""
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="terrenoMedidas">Medidas do Terreno</Label>
+                  <Input
+                    id="terrenoMedidas"
+                    value={formData.terrenoMedidas}
+                    onChange={(e) => handleChange('terrenoMedidas', e.target.value)}
+                    disabled={isLoading}
+                    placeholder=""
+                  />
+                </div>
               </div>
             </div>
 
@@ -489,7 +650,7 @@ export default function PropertyForm() {
                     value={formData.endereco}
                     onChange={(e) => handleChange('endereco', e.target.value)}
                     disabled={isLoading}
-                    placeholder="Rua das Flores, 123"
+                    placeholder=""
                   />
                 </div>
               </div>
@@ -502,7 +663,7 @@ export default function PropertyForm() {
                     value={formData.bairro}
                     onChange={(e) => handleChange('bairro', e.target.value)}
                     disabled={isLoading}
-                    placeholder="Centro"
+                    placeholder=""
                   />
                 </div>
 
@@ -513,7 +674,7 @@ export default function PropertyForm() {
                     value={formData.cidade}
                     onChange={(e) => handleChange('cidade', e.target.value)}
                     disabled={isLoading}
-                    placeholder="São Paulo"
+                    placeholder=""
                   />
                 </div>
 
@@ -524,7 +685,7 @@ export default function PropertyForm() {
                     value={formData.estado}
                     onChange={(e) => handleChange('estado', e.target.value)}
                     disabled={isLoading}
-                    placeholder="SP"
+                    placeholder=""
                     maxLength={2}
                   />
                 </div>

@@ -25,11 +25,11 @@ export interface Property {
   id: number;
   titulo: string;
   codigo: string;
-  subTitulo?: string;
   descricaoCurta?: string;
   descricaoLonga?: string;
   fotos: string[]; // URLs do S3
   valor?: string;
+  valorPromo?: string;
   cep?: string;
   endereco?: string;
   bairro?: string;
@@ -37,6 +37,14 @@ export interface Property {
   estado?: string;
   latitude?: number;
   longitude?: number;
+  suites?: number;
+  dormitorios?: number;
+  banheiros?: number;
+  garagem?: boolean;
+  geminada?: boolean;
+  terrenoMedidas?: string;
+  terrenoM2?: number;
+  areaConstruida?: number;
   createdAt: string;
   updatedAt: string;
   tipo?: {
@@ -57,12 +65,12 @@ export interface Property {
 export interface PropertyFormData {
   titulo: string;
   codigo: string;
-  subTitulo?: string;
   descricaoCurta?: string;
   descricaoLonga?: string;
   tipo: string; // ID do tipo
   finalidade: string; // ID da finalidade
   valor?: string;
+  valorPromo?: string;
   cep?: string;
   endereco?: string;
   bairro?: string;
@@ -70,6 +78,14 @@ export interface PropertyFormData {
   estado?: string;
   latitude?: number;
   longitude?: number;
+  suites?: number;
+  dormitorios?: number;
+  banheiros?: number;
+  garagem?: boolean;
+  geminada?: boolean;
+  terrenoMedidas?: string;
+  terrenoM2?: number;
+  areaConstruida?: number;
   fotos?: File[]; // Arquivos para upload
   oldPhotos?: string[]; // URLs existentes
 }

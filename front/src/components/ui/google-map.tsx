@@ -77,11 +77,16 @@ export function GoogleMap({
       if (data.status === 'OK' && data.results && data.results.length > 0) {
         const location = data.results[0].geometry.location;
         console.log('✅ Coordenadas encontradas:', location);
-        setCoordinates({ lat: location.lat, lng: location.lng });
         
-        // Notificar componente pai sobre as coordenadas
+        const newCoordinates = { lat: location.lat, lng: location.lng };
+        setCoordinates(newCoordinates);
+        
+        // SEMPRE notificar componente pai sobre as coordenadas (mesmo se já tiver pesquisado antes)
         if (onLocationChange) {
+          console.log('📞 Chamando onLocationChange com:', newCoordinates);
           onLocationChange(location.lat, location.lng);
+        } else {
+          console.warn('⚠️ onLocationChange não está definido!');
         }
         
         setError(null);

@@ -48,10 +48,10 @@ export const propertiesService = {
       // Adicionar campos de texto
       formData.append('titulo', data.titulo);
       formData.append('codigo', data.codigo);
-      if (data.subTitulo) formData.append('subTitulo', data.subTitulo);
       if (data.descricaoCurta) formData.append('descricaoCurta', data.descricaoCurta);
       if (data.descricaoLonga) formData.append('descricaoLonga', data.descricaoLonga);
       if (data.valor) formData.append('valor', data.valor);
+      if (data.valorPromo) formData.append('valorPromo', data.valorPromo);
       if (data.cep) formData.append('cep', data.cep);
       if (data.endereco) formData.append('endereco', data.endereco);
       if (data.bairro) formData.append('bairro', data.bairro);
@@ -69,6 +69,17 @@ export const propertiesService = {
       } else {
         console.warn('⚠️ Longitude está undefined, não será enviada!');
       }
+      // Campos numéricos
+      if (data.suites !== undefined) formData.append('suites', data.suites.toString());
+      if (data.dormitorios !== undefined) formData.append('dormitorios', data.dormitorios.toString());
+      if (data.banheiros !== undefined) formData.append('banheiros', data.banheiros.toString());
+      if (data.terrenoM2 !== undefined) formData.append('terrenoM2', data.terrenoM2.toString());
+      if (data.areaConstruida !== undefined) formData.append('areaConstruida', data.areaConstruida.toString());
+      // Campos booleanos
+      formData.append('garagem', data.garagem ? 'true' : 'false');
+      formData.append('geminada', data.geminada ? 'true' : 'false');
+      // Campo de texto
+      if (data.terrenoMedidas) formData.append('terrenoMedidas', data.terrenoMedidas);
       formData.append('tipo', data.tipo);
       formData.append('finalidade', data.finalidade);
 
@@ -106,10 +117,10 @@ export const propertiesService = {
       // Adicionar campos de texto
       if (data.titulo) formData.append('titulo', data.titulo);
       if (data.codigo) formData.append('codigo', data.codigo);
-      if (data.subTitulo) formData.append('subTitulo', data.subTitulo);
       if (data.descricaoCurta) formData.append('descricaoCurta', data.descricaoCurta);
       if (data.descricaoLonga) formData.append('descricaoLonga', data.descricaoLonga);
       if (data.valor) formData.append('valor', data.valor);
+      if (data.valorPromo) formData.append('valorPromo', data.valorPromo);
       if (data.cep) formData.append('cep', data.cep);
       if (data.endereco) formData.append('endereco', data.endereco);
       if (data.bairro) formData.append('bairro', data.bairro);
@@ -127,6 +138,17 @@ export const propertiesService = {
       } else {
         console.warn('⚠️ [UPDATE] Longitude está undefined, não será enviada!');
       }
+      // Campos numéricos
+      if (data.suites !== undefined) formData.append('suites', data.suites.toString());
+      if (data.dormitorios !== undefined) formData.append('dormitorios', data.dormitorios.toString());
+      if (data.banheiros !== undefined) formData.append('banheiros', data.banheiros.toString());
+      if (data.terrenoM2 !== undefined) formData.append('terrenoM2', data.terrenoM2.toString());
+      if (data.areaConstruida !== undefined) formData.append('areaConstruida', data.areaConstruida.toString());
+      // Campos booleanos
+      if (data.garagem !== undefined) formData.append('garagem', data.garagem ? 'true' : 'false');
+      if (data.geminada !== undefined) formData.append('geminada', data.geminada ? 'true' : 'false');
+      // Campo de texto
+      if (data.terrenoMedidas) formData.append('terrenoMedidas', data.terrenoMedidas);
       if (data.tipo) formData.append('tipo', data.tipo);
       if (data.finalidade) formData.append('finalidade', data.finalidade);
 

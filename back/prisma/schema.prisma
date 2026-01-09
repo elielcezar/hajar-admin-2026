@@ -23,8 +23,7 @@ model User {
 
 model Imovel {
   id              Int                 @id @default(autoincrement())
-  titulo          String
-  subTitulo       String?
+  titulo          String  
   descricaoCurta  String?             @db.Text
   descricaoLonga  String?             @db.Text
   fotos           Json                // Array de URLs das fotos no S3
@@ -35,8 +34,17 @@ model Imovel {
   estado          String?
   latitude        Float?              // Latitude para Google Maps
   longitude       Float?              // Longitude para Google Maps
-  valor           String?
+  valor           Decimal?
+  valorPromo      Decimal?
   codigo          String              @unique
+  suites          Int?
+  dormitorios     Int?
+  banheiros       Int?
+  garagem         Boolean             @default(false)
+  geminada        Boolean             @default(false)
+  terrenoMedidas  String?
+  terrenoM2       Int?
+  areaConstruida  Int?  
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
   tipo            ImovelTipo[]
