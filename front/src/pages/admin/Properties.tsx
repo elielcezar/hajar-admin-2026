@@ -174,7 +174,7 @@ export default function Properties() {
                     className="h-8 px-2"
                     onClick={() => handleSort('cidade')}
                   >
-                    Cidade
+                    Bairro
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
@@ -211,7 +211,7 @@ export default function Properties() {
                     <TableCell className="font-medium">{property.codigo}</TableCell>
                     <TableCell>{property.titulo}</TableCell>
                     <TableCell className="capitalize">{getTipoNome(property)}</TableCell>
-                    <TableCell>{property.cidade || 'N/A'}</TableCell>
+                    <TableCell>{property.bairro || 'N/A'}</TableCell>
                     <TableCell>
                       {property.valor ? 
                         new Intl.NumberFormat('pt-BR', {

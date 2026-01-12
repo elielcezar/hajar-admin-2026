@@ -50,7 +50,7 @@ All colors MUST be HSL.
     --radius: 0.5rem;
 
     /*--sidebar-background: 0 0% 98% /* hsl(0 0% 98%) */;
-    --sidebar-background: 0 100% 45% /* hsl(0 100% 45%) */;
+    --sidebar-background: 204 57% 15% /* hsl(204 57% 15%) */;
 
     /*--sidebar-foreground: 240 5.3% 26.1% /* hsl(240 5.3% 26.1%) */;
     --sidebar-foreground: 122 0% 100% /* hsl(122 0% 100%) /* texto dos itens da sidebar*/;    

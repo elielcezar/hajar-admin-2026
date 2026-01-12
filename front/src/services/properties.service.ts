@@ -70,11 +70,11 @@ export const propertiesService = {
         console.warn('⚠️ Longitude está undefined, não será enviada!');
       }
       // Campos numéricos
-      if (data.suites !== undefined) formData.append('suites', data.suites.toString());
-      if (data.dormitorios !== undefined) formData.append('dormitorios', data.dormitorios.toString());
-      if (data.banheiros !== undefined) formData.append('banheiros', data.banheiros.toString());
-      if (data.terrenoM2 !== undefined) formData.append('terrenoM2', data.terrenoM2.toString());
-      if (data.areaConstruida !== undefined) formData.append('areaConstruida', data.areaConstruida.toString());
+      if (data.suites !== undefined && data.suites !== null) formData.append('suites', data.suites.toString());
+      if (data.dormitorios !== undefined && data.dormitorios !== null) formData.append('dormitorios', data.dormitorios.toString());
+      if (data.banheiros !== undefined && data.banheiros !== null) formData.append('banheiros', data.banheiros.toString());
+      if (data.terrenoM2 !== undefined && data.terrenoM2 !== null) formData.append('terrenoM2', data.terrenoM2.toString());
+      if (data.areaConstruida !== undefined && data.areaConstruida !== null) formData.append('areaConstruida', data.areaConstruida.toString());
       // Campos booleanos
       formData.append('garagem', data.garagem ? 'true' : 'false');
       formData.append('geminada', data.geminada ? 'true' : 'false');
@@ -139,11 +139,11 @@ export const propertiesService = {
         console.warn('⚠️ [UPDATE] Longitude está undefined, não será enviada!');
       }
       // Campos numéricos
-      if (data.suites !== undefined) formData.append('suites', data.suites.toString());
-      if (data.dormitorios !== undefined) formData.append('dormitorios', data.dormitorios.toString());
-      if (data.banheiros !== undefined) formData.append('banheiros', data.banheiros.toString());
-      if (data.terrenoM2 !== undefined) formData.append('terrenoM2', data.terrenoM2.toString());
-      if (data.areaConstruida !== undefined) formData.append('areaConstruida', data.areaConstruida.toString());
+      if (data.suites !== undefined && data.suites !== null) formData.append('suites', data.suites.toString());
+      if (data.dormitorios !== undefined && data.dormitorios !== null) formData.append('dormitorios', data.dormitorios.toString());
+      if (data.banheiros !== undefined && data.banheiros !== null) formData.append('banheiros', data.banheiros.toString());
+      if (data.terrenoM2 !== undefined && data.terrenoM2 !== null) formData.append('terrenoM2', data.terrenoM2.toString());
+      if (data.areaConstruida !== undefined && data.areaConstruida !== null) formData.append('areaConstruida', data.areaConstruida.toString());
       // Campos booleanos
       if (data.garagem !== undefined) formData.append('garagem', data.garagem ? 'true' : 'false');
       if (data.geminada !== undefined) formData.append('geminada', data.geminada ? 'true' : 'false');

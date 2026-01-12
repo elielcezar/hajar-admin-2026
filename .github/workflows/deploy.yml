@@ -1,0 +1,35 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main # TODO: Confirm this is the production branch
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to VPS
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.VPS_SSH_HOST }}
+        username: ${{ secrets.VPS_SSH_USER }}
+        key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+        script: |
+          # Go to the project directory (TODO: ask user for this path)
+          cd /path/to/your/project 
+
+          # Create backend .env file
+          echo "${{ secrets.DOTENV_BACKEND }}" > back/.env
+
+          # Create frontend .env file
+          echo "${{ secrets.DOTENV_FRONTEND }}" > front/.env
+          
+          # Make deploy script executable and run it
+          chmod +x ./deploy.sh
+          ./deploy.sh

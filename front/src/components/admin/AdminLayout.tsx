@@ -57,17 +57,16 @@ export function AdminLayout() {
       <div className="min-h-screen flex w-full">
         <Sidebar>
           <SidebarContent>
-            <div className="p-4 bg-oceanic text-oceanic-foreground">
+            <div className="p-4 bg-primary text-primary-foreground">
               <img src={logo} alt="Logo" className="mt-4 mb-5 w-full max-w-52" />
             </div>
 
-            <SidebarGroup>
-              <SidebarGroupLabel>Menu</SidebarGroupLabel>
+            <SidebarGroup>              
               <SidebarGroupContent>
                 <SidebarMenu>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild>
+                      <SidebarMenuButton asChild className="text-lg">
                         <NavLink
                           to={item.url}
                           end={item.url === '/admin'}
@@ -90,7 +89,7 @@ export function AdminLayout() {
             <div className="mt-auto p-4 border-t border-sidebar-border space-y-2">
               <Button
                 variant="ghost"
-                className="w-full justify-start hover:bg-oceanic hover:text-oceanic-foreground"
+                className="w-full justify-start hover:bg-oceanic hover:text-oceanic-foreground text-lg"
                 onClick={() => navigate('/admin/perfil')}
               >
                 <User className="h-4 w-4 mr-2" />
@@ -98,7 +97,7 @@ export function AdminLayout() {
               </Button>
               <Button
                 variant="ghost"
-                className="w-full justify-start hover:bg-oceanic hover:text-oceanic-foreground"
+                className="w-full justify-start hover:bg-oceanic hover:text-oceanic-foreground text-lg"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4 mr-2" />
