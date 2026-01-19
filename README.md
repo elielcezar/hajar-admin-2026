@@ -231,6 +231,18 @@ O frontend estará rodando em: `http://localhost:5173`
 - Finalidades (Venda, Aluguel, etc.)
 - CRUD completo
 
+### ✅ Gestão de Destaques (Hero Section)
+- Listagem de destaques do Hero Section do site público
+- Cadastro de novos destaques com imagem
+- Edição de destaques existentes
+- Exclusão de destaques
+- Upload de imagem única para S3
+- Preview de imagem
+- Campos: título, descrição, imagem, valor, área, quartos, banheiros, garagem, texto do botão, link
+- Controle de status (ativo/inativo)
+- Ordenação personalizada para exibição no carrossel
+- Dados independentes dos imóveis cadastrados
+
 ---
 
 ## 📡 API Endpoints
@@ -282,6 +294,51 @@ GET    /api/categorias       # Listar categorias
 POST   /api/categorias       # Criar categoria
 PUT    /api/categorias/:id   # Atualizar categoria
 DELETE /api/categorias/:id   # Deletar categoria
+```
+
+### Destaques (Hero Section)
+```
+GET    /api/destaques        # Listar destaques ativos (público - para o site)
+GET    /api/destaques/admin  # Listar todos os destaques (admin - inclui inativos)
+GET    /api/destaques/:id    # Buscar destaque por ID
+POST   /api/destaques        # Criar destaque (com upload de imagem)
+PUT    /api/destaques/:id    # Atualizar destaque (com upload de imagem)
+DELETE /api/destaques/:id    # Deletar destaque
+```
+
+**Estrutura do Destaque:**
+```json
+{
+  "id": 1,
+  "titulo": "Oportunidade de investimento",
+  "descricao": "Investir em imóveis é uma excelente oportunidade...",
+  "imagem": "https://bucket.s3.amazonaws.com/destaque.jpg",
+  "valor": "1000000.00",
+  "area": 150,
+  "quartos": 3,
+  "banheiros": 2,
+  "garagem": 2,
+  "textoBotao": "Ver Mais Informações",
+  "link": "https://exemplo.com/imovel",
+  "ativo": true,
+  "ordem": 0,
+  "createdAt": "2024-01-19T12:00:00.000Z",
+  "updatedAt": "2024-01-19T12:00:00.000Z"
+}
+```
+
+**Exemplo de uso no site público:**
+```javascript
+// Buscar apenas destaques ativos, ordenados por 'ordem'
+const response = await fetch('http://localhost:3000/api/destaques');
+const destaques = await response.json();
+
+// Usar no carrossel do Hero Section
+destaques.forEach(destaque => {
+  console.log(destaque.titulo);
+  console.log(destaque.imagem);
+  console.log(destaque.link);
+});
 ```
 
 ---
