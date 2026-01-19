@@ -10,6 +10,8 @@ import { AdminLayout } from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import Properties from "./pages/admin/Properties";
 import PropertyForm from "./pages/admin/PropertyForm";
+import Destaques from "./pages/admin/Destaques";
+import DestaqueForm from "./pages/admin/DestaqueForm";
 import Users from "./pages/admin/Users";
 import UserForm from "./pages/admin/UserForm";
 import Profile from "./pages/admin/Profile";
@@ -31,6 +33,9 @@ const App = () => (
             <Route path="imoveis" element={<Properties />} />
             <Route path="imoveis/novo" element={<PropertyForm />} />
             <Route path="imoveis/:id/editar" element={<PropertyForm />} />
+            <Route path="destaques" element={<Destaques />} />
+            <Route path="destaques/novo" element={<DestaqueForm />} />
+            <Route path="destaques/:id/editar" element={<DestaqueForm />} />
             <Route path="usuarios" element={<Users />} />
             <Route path="usuarios/novo" element={<UserForm />} />
             <Route path="usuarios/:id/editar" element={<UserForm />} />

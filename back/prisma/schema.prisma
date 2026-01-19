@@ -118,3 +118,25 @@ model ImovelCategoria {
   @@unique([imovelId, categoriaId])
   @@map("imovel_categorias")
 }
+
+model Destaque {
+  id            Int      @id @default(autoincrement())
+  titulo        String
+  descricao     String   @db.Text
+  imagem        String   // URL da imagem no S3
+  valor         Decimal?
+  area          Int?     // Área em m²
+  quartos       Int?
+  banheiros     Int?
+  garagem       Int?     // Número de vagas
+  textoBotao    String
+  link          String
+  ativo         Boolean  @default(true)
+  ordem         Int      @default(0) // Para ordenação no carrossel
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("destaques")
+  @@index([ativo])
+  @@index([ordem])
+}

@@ -90,6 +90,42 @@ export interface PropertyFormData {
   oldPhotos?: string[]; // URLs existentes
 }
 
+// Destaque (Hero Section)
+export interface Destaque {
+  id: number;
+  titulo: string;
+  descricao: string;
+  imagem: string; // URL do S3
+  valor?: string;
+  area?: number;
+  quartos?: number;
+  banheiros?: number;
+  garagem?: number;
+  textoBotao: string;
+  link: string;
+  ativo: boolean;
+  ordem: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Para criar/editar destaque
+export interface DestaqueFormData {
+  titulo: string;
+  descricao: string;
+  imagem?: File; // Arquivo para upload
+  oldImage?: string; // URL existente (para edição)
+  valor?: string;
+  area?: number;
+  quartos?: number;
+  banheiros?: number;
+  garagem?: number;
+  textoBotao: string;
+  link: string;
+  ativo: boolean;
+  ordem: number;
+}
+
 // Usuário
 export interface User {
   id: number;

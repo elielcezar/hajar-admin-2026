@@ -154,6 +154,7 @@ export default function Properties() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[100px]">Imagem</TableHead>
                 <TableHead>Código</TableHead>
                 <TableHead>
                   <Button
@@ -195,19 +196,32 @@ export default function Properties() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                   </TableCell>
                 </TableRow>
               ) : paginatedProperties.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">
                     {searchTerm ? 'Nenhum imóvel encontrado' : 'Nenhum imóvel cadastrado'}
                   </TableCell>
                 </TableRow>
               ) : (
                 paginatedProperties.map((property) => (
                   <TableRow key={property.id}>
+                    <TableCell>
+                      {property.fotos && property.fotos.length > 0 ? (
+                        <img
+                          src={property.fotos[0]}
+                          alt={property.titulo}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
+                          <span className="text-xs text-muted-foreground">Sem foto</span>
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="font-medium">{property.codigo}</TableCell>
                     <TableCell>{property.titulo}</TableCell>
                     <TableCell className="capitalize">{getTipoNome(property)}</TableCell>
