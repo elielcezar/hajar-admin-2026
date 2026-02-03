@@ -8,6 +8,8 @@ import categoriasRoutes from './routes/categorias.js';
 import tipoRoutes from './routes/tipoImovel.js';
 import finalidadeRoutes from './routes/finalidade.js';
 import destaquesRoutes from './routes/destaques.js';
+import blogCategoriasRoutes from './routes/blogCategorias.js';
+import postsRoutes from './routes/posts.js';
 import { errorHandler } from './utils/errors.js';
 
 // Carregar variáveis de ambiente do arquivo .env
@@ -69,6 +71,8 @@ app.use('/api', categoriasRoutes);
 app.use('/api', tipoRoutes);
 app.use('/api', finalidadeRoutes);
 app.use('/api', destaquesRoutes);
+app.use('/api', blogCategoriasRoutes);
+app.use('/api', postsRoutes);
 
 // Servir arquivos estáticos (se existirem uploads locais antigos)
 app.use('/uploads', express.static('uploads'));

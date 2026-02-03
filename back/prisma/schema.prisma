@@ -50,6 +50,7 @@ model Imovel {
   tipo            ImovelTipo[]
   finalidade      ImovelFinalidade[]
   categorias      ImovelCategoria[]
+  posts           Post[]
 
   @@map("imoveis")
   @@index([codigo])
@@ -139,4 +140,46 @@ model Destaque {
   @@map("destaques")
   @@index([ativo])
   @@index([ordem])
+}
+
+// BLOG SYSTEM
+
+model BlogCategoria {
+  id        Int      @id @default(autoincrement())
+  nome      String   @unique
+  posts     Post[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("blog_categorias")
+}
+
+enum PostStatus {
+  RASCUNHO
+  PUBLICADO
+}
+
+model Post {
+  id              Int           @id @default(autoincrement())
+  titulo          String
+  slug            String        @unique
+  chamada         String?       @db.Text // Resumo
+  conteudo        String        @db.LongText // Conteúdo completo (Rich Text)
+  imagemCapa      String?       // URL da imagem no S3
+  dataPublicacao  DateTime?
+  status          PostStatus    @default(RASCUNHO)
+
+  // Relacionamentos
+  categoriaId     Int
+  categoria       BlogCategoria @relation(fields: [categoriaId], references: [id])
+
+  imovelId        Int?
+  imovel          Imovel?       @relation(fields: [imovelId], references: [id])
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("posts")
+  @@index([slug])
+  @@index([status])
 }

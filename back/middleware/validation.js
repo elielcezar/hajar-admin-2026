@@ -79,3 +79,18 @@ export const finalidadeSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
 });
 
+export const blogCategoriaSchema = z.object({
+  nome: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
+});
+
+export const postSchema = z.object({
+  titulo: z.string().min(3, 'Título deve ter no mínimo 3 caracteres'),
+  slug: z.string().min(3, 'Slug deve ter no mínimo 3 caracteres'),
+  chamada: z.string().optional(),
+  conteudo: z.string().min(10, 'Conteúdo deve ter no mínimo 10 caracteres'),
+  dataPublicacao: z.string().optional().nullable(),
+  status: z.enum(['RASCUNHO', 'PUBLICADO']).default('RASCUNHO'),
+  categoriaId: z.union([z.number(), z.string()]).transform(val => typeof val === 'string' ? parseInt(val) : val),
+  imovelId: z.union([z.number(), z.string()]).optional().nullable().transform(val => (typeof val === 'string' && val !== '') ? parseInt(val) : val),
+});
+
