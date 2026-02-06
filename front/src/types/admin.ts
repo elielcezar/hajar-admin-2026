@@ -155,6 +155,50 @@ export interface AdminUser extends User {
   role?: 'admin' | 'editor' | 'viewer'; // Mantido para compatibilidade, mas não vem do backend
 }
 
+// BLOG
+export type PostStatus = 'RASCUNHO' | 'PUBLICADO';
+
+export interface BlogCategoria {
+  id: number;
+  nome: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Post {
+  id: number;
+  titulo: string;
+  slug: string;
+  chamada?: string;
+  conteudo: string;
+  imagemCapa?: string;
+  dataPublicacao?: string;
+  status: PostStatus;
+  categoriaId: number;
+  categoria: BlogCategoria;
+  imovelId?: number;
+  imovel?: {
+    id: number;
+    titulo: string;
+    codigo: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PostFormData {
+  titulo: string;
+  slug: string;
+  chamada?: string;
+  conteudo: string;
+  imagemCapa?: File;
+  oldImagemCapa?: string;
+  dataPublicacao?: string;
+  status: PostStatus;
+  categoriaId: string;
+  imovelId?: string;
+}
+
 // Respostas da API
 export interface ApiResponse<T> {
   data: T;

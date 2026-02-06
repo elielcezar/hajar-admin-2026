@@ -14,7 +14,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 
-import { Building2, Users, LogOut, LayoutDashboard, User, Star } from 'lucide-react';
+import { Building2, Users, LogOut, LayoutDashboard, User, Star, Newspaper, Tags } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo-w.png';
 /*import { ThemeToggle } from '@/components/ui/theme-toggle';*/
@@ -24,6 +24,8 @@ const menuItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
   { title: 'Imóveis', url: '/admin/imoveis', icon: Building2 },
   { title: 'Destaques', url: '/admin/destaques', icon: Star },
+  { title: 'Blog', url: '/admin/blog', icon: Newspaper },
+  { title: 'Blog Categorias', url: '/admin/blog/categorias', icon: Tags },
   { title: 'Usuários', url: '/admin/usuarios', icon: Users },
 ];
 

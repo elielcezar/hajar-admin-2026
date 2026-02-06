@@ -15,6 +15,9 @@ import DestaqueForm from "./pages/admin/DestaqueForm";
 import Users from "./pages/admin/Users";
 import UserForm from "./pages/admin/UserForm";
 import Profile from "./pages/admin/Profile";
+import BlogPosts from "./pages/admin/blog/Posts";
+import BlogPostForm from "./pages/admin/blog/PostForm";
+import BlogCategories from "./pages/admin/blog/BlogCategories";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +39,10 @@ const App = () => (
             <Route path="destaques" element={<Destaques />} />
             <Route path="destaques/novo" element={<DestaqueForm />} />
             <Route path="destaques/:id/editar" element={<DestaqueForm />} />
+            <Route path="blog" element={<BlogPosts />} />
+            <Route path="blog/novo" element={<BlogPostForm />} />
+            <Route path="blog/:id/editar" element={<BlogPostForm />} />
+            <Route path="blog/categorias" element={<BlogCategories />} />
             <Route path="usuarios" element={<Users />} />
             <Route path="usuarios/novo" element={<UserForm />} />
             <Route path="usuarios/:id/editar" element={<UserForm />} />
