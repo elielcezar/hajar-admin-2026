@@ -44,7 +44,7 @@ export const propertiesService = {
   async create(data: PropertyFormData): Promise<Property> {
     try {
       const formData = new FormData();
-      
+
       // Adicionar campos de texto
       formData.append('titulo', data.titulo);
       formData.append('codigo', data.codigo);
@@ -88,6 +88,11 @@ export const propertiesService = {
         data.fotos.forEach((file) => {
           formData.append('fotos', file);
         });
+      }
+
+      // Adicionar imagem de capa
+      if (data.imagemCapa) {
+        formData.append('imagemCapa', data.imagemCapa);
       }
 
       console.log('📦 FormData pronto para enviar. Conferindo coordenadas:', {
@@ -162,6 +167,16 @@ export const propertiesService = {
         data.fotos.forEach((file) => {
           formData.append('fotos', file);
         });
+      }
+
+      // Adicionar imagem de capa antiga (manter)
+      if (data.oldImagemCapa) {
+        formData.append('oldImagemCapa', data.oldImagemCapa);
+      }
+
+      // Adicionar nova imagem de capa
+      if (data.imagemCapa) {
+        formData.append('imagemCapa', data.imagemCapa);
       }
 
       console.log('📦 [UPDATE] FormData pronto para enviar. Conferindo coordenadas:', {

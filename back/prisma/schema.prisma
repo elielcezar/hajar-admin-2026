@@ -27,6 +27,7 @@ model Imovel {
   descricaoCurta  String?             @db.Text
   descricaoLonga  String?             @db.Text
   fotos           Json                // Array de URLs das fotos no S3
+  imagemCapa      String?             // URL da imagem de capa no S3
   cep             String?
   endereco        String?
   bairro          String?

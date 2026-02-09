@@ -1,6 +1,6 @@
 import express from 'express';
 import prisma from '../config/prisma.js';
-import { uploadS3 } from '../config/s3.js';
+import { uploadS3, uploadImoveisFields } from '../config/s3.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { validate, imovelCreateSchema } from '../middleware/validation.js';
 import { NotFoundError } from '../utils/errors.js';
@@ -21,7 +21,7 @@ const handleMulterError = (upload) => {
                     field: err.field,
                     name: err.name
                 });
-                
+
                 if (err.code === 'LIMIT_FILE_SIZE') {
                     const maxSizeMB = 10;
                     const fileName = err.field ? `O arquivo "${err.field}"` : 'Um arquivo';
@@ -30,35 +30,35 @@ const handleMulterError = (upload) => {
                         message: `${fileName} excede o limite de ${maxSizeMB}MB. Por favor, comprima a imagem antes de enviar.`
                     });
                 }
-                
+
                 if (err.code === 'LIMIT_FILE_COUNT') {
                     return res.status(400).json({
                         error: 'Muitos arquivos',
                         message: 'O número máximo de arquivos é 18'
                     });
                 }
-                
+
                 if (err.message && err.message.includes('Tipo de arquivo inválido')) {
                     return res.status(400).json({
                         error: 'Tipo de arquivo inválido',
                         message: err.message
                     });
                 }
-                
+
                 // Erros do S3/AWS - capturar qualquer erro relacionado ao S3
-                const isS3Error = err.name === 'S3Client' || 
-                                 err.$metadata || 
-                                 err.Code || 
-                                 err.code === 'CredentialsError' || 
-                                 err.name === 'NoCredentialsError' ||
-                                 err.name === 'AccessDenied' ||
-                                 err.code === 'AccessDenied' ||
-                                 err.message?.includes('S3') ||
-                                 err.message?.includes('AWS') ||
-                                 err.message?.includes('bucket') ||
-                                 err.stack?.includes('s3') ||
-                                 err.stack?.includes('S3');
-                
+                const isS3Error = err.name === 'S3Client' ||
+                    err.$metadata ||
+                    err.Code ||
+                    err.code === 'CredentialsError' ||
+                    err.name === 'NoCredentialsError' ||
+                    err.name === 'AccessDenied' ||
+                    err.code === 'AccessDenied' ||
+                    err.message?.includes('S3') ||
+                    err.message?.includes('AWS') ||
+                    err.message?.includes('bucket') ||
+                    err.stack?.includes('s3') ||
+                    err.stack?.includes('S3');
+
                 if (isS3Error) {
                     console.error('❌ Erro no S3/AWS:', err);
                     console.error('   Tipo:', err.name || err.constructor?.name);
@@ -68,10 +68,10 @@ const handleMulterError = (upload) => {
                     if (err.$metadata) {
                         console.error('   Metadata:', JSON.stringify(err.$metadata, null, 2));
                     }
-                    
+
                     let errorMessage = 'Erro ao fazer upload para S3';
                     let statusCode = 500;
-                    
+
                     if (err.name === 'NoCredentialsError' || err.code === 'CredentialsError' || err.message?.includes('credentials')) {
                         errorMessage = 'Credenciais AWS não configuradas ou inválidas. Verifique as variáveis AWS_ACCESS_KEY_ID e AWS_SECRET_ACCESS_KEY no servidor.';
                         statusCode = 500;
@@ -91,7 +91,7 @@ const handleMulterError = (upload) => {
                         // Em produção, sempre mostrar a mensagem de erro real para debug
                         errorMessage = `Erro S3: ${err.message || 'Erro desconhecido'}`;
                     }
-                    
+
                     return res.status(statusCode).json({
                         error: 'Erro ao fazer upload para S3',
                         message: errorMessage,
@@ -102,7 +102,7 @@ const handleMulterError = (upload) => {
                         }
                     });
                 }
-                
+
                 return res.status(500).json({
                     error: 'Erro ao processar upload',
                     message: process.env.NODE_ENV === 'development' ? err.message : 'Erro ao fazer upload de imagens'
@@ -114,19 +114,19 @@ const handleMulterError = (upload) => {
 };
 
 // Criar imovel (protegido)
-router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fotos', 18)), async (req, res, next) => {
+router.post('/imoveis', authenticateToken, handleMulterError(uploadImoveisFields), async (req, res, next) => {
     try {
         console.log('📥 Recebendo requisição POST /imoveis');
-        console.log('📦 Files recebidos:', req.files ? req.files.length : 0);
+        console.log('📦 Files recebidos:', req.files ? Object.keys(req.files) : 0);
         console.log('📋 Headers:', {
             'content-type': req.headers['content-type'],
             'content-length': req.headers['content-length']
         });
-        
-        const { 
-            titulo, 
-            codigo, 
-            descricaoCurta, 
+
+        const {
+            titulo,
+            codigo,
+            descricaoCurta,
             descricaoLonga,
             tipo,
             finalidade,
@@ -150,9 +150,9 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
         } = req.body;
 
         console.log('📝 Dados body recebidos:', {
-            titulo, 
-            codigo, 
-            descricaoCurta, 
+            titulo,
+            codigo,
+            descricaoCurta,
             descricaoLonga,
             tipo,
             finalidade,
@@ -176,8 +176,8 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
         });
 
         // URLs das fotos no S3
-        const fotos = req.files ? req.files.map(file => {
-            console.log('📸 Arquivo processado:', {
+        const fotos = req.files && req.files.fotos ? req.files.fotos.map(file => {
+            console.log('📸 Arquivo foto processado:', {
                 originalname: file.originalname,
                 location: file.location,
                 size: file.size,
@@ -186,8 +186,14 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
             return file.location;
         }) : [];
 
+        // URL da imagem de capa
+        const imagemCapa = req.files && req.files.imagemCapa && req.files.imagemCapa[0]
+            ? req.files.imagemCapa[0].location
+            : null;
+
         console.log('🔗 URLs das fotos:', fotos);
-        
+        console.log('🖼️ Imagem de capa:', imagemCapa);
+
         // Validações básicas
         if (!titulo || !codigo || !tipo || !finalidade) {
             return res.status(400).json({
@@ -195,15 +201,15 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
                 message: 'Título, código, tipo e finalidade são obrigatórios'
             });
         }
-        
+
         console.log('💾 Criando imóvel no banco de dados...');
-        
+
         const response = await prisma.imovel.create({
             data: {
-                titulo, 
-                codigo, 
-                descricaoCurta, 
-                descricaoLonga,                
+                titulo,
+                codigo,
+                descricaoCurta,
+                descricaoLonga,
                 valor: valor ? parseFloat(valor) : null,
                 valorPromo: valorPromo ? parseFloat(valorPromo) : null,
                 cep,
@@ -222,6 +228,7 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
                 terrenoM2: terrenoM2 ? parseInt(terrenoM2) : null,
                 areaConstruida: areaConstruida ? parseInt(areaConstruida) : null,
                 fotos: fotos,
+                imagemCapa: imagemCapa,
                 tipo: {
                     create: [{
                         tipoId: parseInt(tipo)
@@ -246,7 +253,7 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadS3.array('fot
                 }
             }
         });
-        
+
         console.log('✅ Imóvel criado com sucesso:', response.id);
         res.status(201).json(response);
     } catch (error) {
@@ -269,7 +276,7 @@ router.get('/imoveis', async (req, res, next) => {
 
         // Criar objeto de filtro apenas com parâmetros definidos
         const filtro = {};
-        if (req.query.codigo) filtro.codigo = req.query.codigo;                
+        if (req.query.codigo) filtro.codigo = req.query.codigo;
         if (req.query.cidade) filtro.cidade = req.query.cidade;
         if (req.query.tipo) {
             filtro.tipo = {
@@ -288,7 +295,7 @@ router.get('/imoveis', async (req, res, next) => {
                     }
                 }
             }
-        }         
+        }
 
         const imoveis = await prisma.imovel.findMany({
             where: filtro,
@@ -313,7 +320,7 @@ router.get('/imoveis', async (req, res, next) => {
                 createdAt: 'desc'
             }
         });
-                
+
         const imovelCompleto = imoveis.map(imovel => ({
             ...imovel,
             url: `${baseUrl}/imoveis/${imovel.id}`
@@ -321,7 +328,7 @@ router.get('/imoveis', async (req, res, next) => {
 
         console.log(`Imóveis encontrados: ${imovelCompleto.length}`);
         res.status(200).json(imovelCompleto);
-        
+
     } catch (error) {
         next(error);
     }
@@ -354,11 +361,11 @@ router.get('/imoveis/id/:id', async (req, res, next) => {
                 }
             }
         });
-        
+
         if (!imovel) {
             throw new NotFoundError('Imóvel não encontrado');
         }
-        
+
         res.json(imovel);
     } catch (error) {
         next(error);
@@ -395,11 +402,11 @@ router.get('/imoveis/:codigo', async (req, res, next) => {
                 }
             }
         });
-        
+
         if (!imovel) {
             throw new NotFoundError('Imóvel não encontrado');
         }
-        
+
         res.json(imovel);
         console.log('Imóvel encontrado:', imovel.titulo);
     } catch (error) {
@@ -408,7 +415,7 @@ router.get('/imoveis/:codigo', async (req, res, next) => {
 });
 
 // Atualizar imovel (protegido)
-router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadS3.array('fotos', 18)), async (req, res, next) => {
+router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadImoveisFields), async (req, res, next) => {
     try {
         console.log('Recebendo requisição PUT /imoveis');
 
@@ -437,7 +444,8 @@ router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadS3.array('
             terrenoMedidas,
             terrenoM2,
             areaConstruida,
-            oldPhotos
+            oldPhotos,
+            oldImagemCapa
         } = req.body;
 
         // Verificar se imóvel existe
@@ -454,14 +462,21 @@ router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadS3.array('
         if (oldPhotos) {
             fotos = JSON.parse(oldPhotos); // Fotos antigas mantidas
         }
-        if (req.files && req.files.length > 0) {
-            const novasFotos = req.files.map(file => file.location); // URLs do S3
+        if (req.files && req.files.fotos && req.files.fotos.length > 0) {
+            const novasFotos = req.files.fotos.map(file => file.location); // URLs do S3
             fotos = [...fotos, ...novasFotos];
+        }
+
+        // Processar imagem de capa
+        let imagemCapa = oldImagemCapa || imovelExistente.imagemCapa;
+        if (req.files && req.files.imagemCapa && req.files.imagemCapa[0]) {
+            imagemCapa = req.files.imagemCapa[0].location;
         }
 
         // Construir objeto de dados apenas com campos definidos
         const data = {
-            fotos // fotos sempre será atualizado (array vazio ou com URLs)
+            fotos, // fotos sempre será atualizado (array vazio ou com URLs)
+            imagemCapa // imagem de capa
         };
 
         // Adicionar campos somente se foram enviados

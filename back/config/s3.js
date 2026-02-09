@@ -17,15 +17,15 @@ console.log('  🔐 Secret Key:', AWS_SECRET_ACCESS_KEY ? '***CONFIGURADO***' : 
 console.log('  🪣 Bucket:', AWS_S3_BUCKET || 'NÃO CONFIGURADO');
 
 if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_S3_BUCKET) {
-    console.error('❌ ERRO: Credenciais AWS não configuradas completamente!');
-    console.error('   Variáveis faltando:');
-    if (!AWS_REGION) console.error('     - AWS_REGION');
-    if (!AWS_ACCESS_KEY_ID) console.error('     - AWS_ACCESS_KEY_ID');
-    if (!AWS_SECRET_ACCESS_KEY) console.error('     - AWS_SECRET_ACCESS_KEY');
-    if (!AWS_S3_BUCKET) console.error('     - AWS_S3_BUCKET');
-    console.error('   ⚠️  Uploads para S3 irão falhar até que todas as variáveis sejam configuradas.');
+  console.error('❌ ERRO: Credenciais AWS não configuradas completamente!');
+  console.error('   Variáveis faltando:');
+  if (!AWS_REGION) console.error('     - AWS_REGION');
+  if (!AWS_ACCESS_KEY_ID) console.error('     - AWS_ACCESS_KEY_ID');
+  if (!AWS_SECRET_ACCESS_KEY) console.error('     - AWS_SECRET_ACCESS_KEY');
+  if (!AWS_S3_BUCKET) console.error('     - AWS_S3_BUCKET');
+  console.error('   ⚠️  Uploads para S3 irão falhar até que todas as variáveis sejam configuradas.');
 } else {
-    console.log('✅ Credenciais AWS configuradas corretamente');
+  console.log('✅ Credenciais AWS configuradas corretamente');
 }
 
 // Configuração do cliente S3
@@ -56,7 +56,7 @@ export const uploadS3 = multer({
   }),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB por arquivo
-    files: 18, // Máximo de 18 arquivos
+    files: 19, // Máximo de 19 arquivos (18 fotos + 1 capa)
   },
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -67,6 +67,12 @@ export const uploadS3 = multer({
     }
   },
 });
+
+// Upload para imóveis com campos separados (capa + fotos)
+export const uploadImoveisFields = uploadS3.fields([
+  { name: 'imagemCapa', maxCount: 1 },
+  { name: 'fotos', maxCount: 18 }
+]);
 
 export const uploadPostsS3 = multer({
   storage: multerS3({

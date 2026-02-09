@@ -28,6 +28,7 @@ export interface Property {
   descricaoCurta?: string;
   descricaoLonga?: string;
   fotos: string[]; // URLs do S3
+  imagemCapa?: string; // URL da imagem de capa no S3
   valor?: string;
   valorPromo?: string;
   cep?: string;
@@ -88,6 +89,8 @@ export interface PropertyFormData {
   areaConstruida?: number;
   fotos?: File[]; // Arquivos para upload
   oldPhotos?: string[]; // URLs existentes
+  imagemCapa?: File; // Arquivo da imagem de capa para upload
+  oldImagemCapa?: string; // URL existente da imagem de capa
 }
 
 // Destaque (Hero Section)

@@ -56,9 +56,12 @@ export default function PropertyForm() {
     areaConstruida: undefined,
     fotos: [],
     oldPhotos: [],
+    imagemCapa: undefined,
+    oldImagemCapa: '',
   });
 
   const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [previewCapa, setPreviewCapa] = useState<string | null>(null);
   const [loadingCep, setLoadingCep] = useState(false);
 
   // Callback para atualizar coordenadas quando o mapa fizer geocoding
@@ -118,8 +121,10 @@ export default function PropertyForm() {
         areaConstruida: property.areaConstruida,
         fotos: [],
         oldPhotos: property.fotos || [],
+        oldImagemCapa: property.imagemCapa || '',
       });
       setPreviewImages(property.fotos || []);
+      setPreviewCapa(property.imagemCapa || null);
     }
   }, [property, isEdit]);
 
@@ -145,7 +150,7 @@ export default function PropertyForm() {
 
   // Mutation para atualizar
   const updateMutation = useMutation({
-    mutationFn: (data: Partial<PropertyFormData>) => 
+    mutationFn: (data: Partial<PropertyFormData>) =>
       propertiesService.update(Number(id), data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['properties'] });
@@ -204,11 +209,11 @@ export default function PropertyForm() {
     handleChange('cep', formattedCep);
 
     const numbersOnly = value.replace(/\D/g, '');
-    
+
     // Só busca quando tiver 8 dígitos
     if (numbersOnly.length === 8) {
       setLoadingCep(true);
-      
+
       try {
         const response = await fetch(`https://viacep.com.br/ws/${numbersOnly}/json/`);
         const data = await response.json();
@@ -242,7 +247,7 @@ export default function PropertyForm() {
 
         toast({
           title: 'CEP encontrado!',
-          description: camposPreenchidos.length > 0 
+          description: camposPreenchidos.length > 0
             ? `Preenchido: ${camposPreenchidos.join(', ')}`
             : 'CEP encontrado, mas sem dados de endereço disponíveis.',
         });
@@ -266,7 +271,7 @@ export default function PropertyForm() {
 
     const newFiles = Array.from(files);
     const currentTotal = (formData.fotos?.length || 0) + (formData.oldPhotos?.length || 0);
-    
+
     if (currentTotal + newFiles.length > 18) {
       toast({
         variant: 'destructive',
@@ -279,7 +284,7 @@ export default function PropertyForm() {
     // Validar tamanho dos arquivos (10MB = 10 * 1024 * 1024 bytes)
     const maxSize = 10 * 1024 * 1024; // 10MB
     const filesTooLarge = newFiles.filter(file => file.size > maxSize);
-    
+
     if (filesTooLarge.length > 0) {
       toast({
         variant: 'destructive',
@@ -295,7 +300,7 @@ export default function PropertyForm() {
     // Validar tipos de arquivo
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     const invalidTypes = newFiles.filter(file => !allowedTypes.includes(file.type));
-    
+
     if (invalidTypes.length > 0) {
       toast({
         variant: 'destructive',
@@ -329,7 +334,7 @@ export default function PropertyForm() {
   // Remover imagem
   const handleRemoveImage = (index: number) => {
     const totalOldPhotos = formData.oldPhotos?.length || 0;
-    
+
     if (index < totalOldPhotos) {
       // Remover de oldPhotos
       setFormData(prev => ({
@@ -346,6 +351,38 @@ export default function PropertyForm() {
     }
 
     setPreviewImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Handler para upload de imagem de capa
+  const handleCapaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tamanho (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        variant: 'destructive',
+        title: 'Arquivo muito grande',
+        description: 'O limite é 10MB.'
+      });
+      return;
+    }
+
+    // Validar tipo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        variant: 'destructive',
+        title: 'Tipo inválido',
+        description: 'Apenas JPEG, JPG, PNG e WEBP são permitidos.'
+      });
+      return;
+    }
+
+    setFormData(prev => ({ ...prev, imagemCapa: file, oldImagemCapa: '' }));
+    const reader = new FileReader();
+    reader.onloadend = () => setPreviewCapa(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
@@ -502,7 +539,7 @@ export default function PropertyForm() {
             {/* Seção de Características */}
             <div className="space-y-4 pt-4 border-t">
               <h3 className="text-lg font-semibold">Características do Imóvel</h3>
-              
+
               <div className="grid gap-4 md:grid-cols-4">
                 <div className="space-y-2">
                   <Label htmlFor="dormitorios">Dormitórios</Label>
@@ -621,7 +658,7 @@ export default function PropertyForm() {
             {/* Seção de Endereço com CEP */}
             <div className="space-y-4 pt-4 border-t">
               <h3 className="text-lg font-semibold">Localização</h3>
-              
+
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="cep">CEP</Label>
@@ -701,6 +738,55 @@ export default function PropertyForm() {
               />
             </div>
 
+            {/* Upload de Imagem de Capa */}
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="text-lg font-semibold">Imagem de Capa</h3>
+              <p className="text-sm text-muted-foreground">
+                Imagem principal que será exibida em destaque. Recomendado: 1200x630px
+              </p>
+              <div className="space-y-4">
+                {previewCapa ? (
+                  <div className="relative group max-w-md">
+                    <img
+                      src={previewCapa}
+                      alt="Capa"
+                      className="w-full aspect-video object-cover rounded-lg"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => {
+                        setPreviewCapa(null);
+                        setFormData(prev => ({ ...prev, imagemCapa: undefined, oldImagemCapa: '' }));
+                      }}
+                      disabled={isLoading}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div
+                    className="border-2 border-dashed rounded-lg aspect-video max-w-md flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => document.getElementById('imagemCapa')?.click()}
+                  >
+                    <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground">Clique para upload</span>
+                    <span className="text-xs text-muted-foreground mt-1">Recomendado: 1200x630px</span>
+                  </div>
+                )}
+                <Input
+                  id="imagemCapa"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleCapaChange}
+                  className="hidden"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
             {/* Upload de Imagens */}
             <div className="space-y-2">
               <Label>Imagens (máximo 18 arquivos, 10MB por arquivo)</Label>
@@ -765,9 +851,9 @@ export default function PropertyForm() {
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEdit ? 'Salvar Alterações' : 'Criar Imóvel'}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => navigate('/admin/imoveis')}
                 disabled={isLoading}
               >
