@@ -58,16 +58,9 @@ export default function PostForm() {
   // Buscar post se for edição
   const { data: post, isLoading: isLoadingPost } = useQuery({
     queryKey: ['blog-post', id],
-    queryFn: () => blogService.getPostBySlug(id!), // Aqui id é na verdade o ID numérico na rota, mas o service tem getPostBySlug. Vou ajustar.
-    // Na verdade, no App.tsx registramos como :id/editar.
-    // Mas no blogService.ts temos getPostBySlug. 
-    // Vamos usar getAllPosts e filtrar ou adicionar getPostById no service.
-    // Por simplicidade, vou usar getAllPosts e achar o ID, ou melhor, adicionar getById no service.
+    queryFn: () => blogService.getPostById(parseInt(id!)),
     enabled: isEdit && !!id,
   });
-
-  // Nota: Vou adicionar getById no blogService.ts depois. Por enquanto, vamos assumir que id é o ID.
-  // Ajustando blogService.ts agora para garantir.
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -353,7 +346,7 @@ export default function PostForm() {
                     </Button>
                   </div>
                 ) : (
-                  <div 
+                  <div
                     className="border-2 border-dashed rounded-lg aspect-video flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => document.getElementById('imagemCapa')?.click()}
                   >
@@ -378,10 +371,10 @@ export default function PostForm() {
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEdit ? 'Salvar Alterações' : 'Publicar Post'}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="lg" 
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
                 className="w-full"
                 onClick={() => navigate('/admin/blog')}
                 disabled={isLoading}

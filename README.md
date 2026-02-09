@@ -149,6 +149,12 @@ npx prisma migrate dev --name init
 npx prisma studio
 ```
 
+5. Acesso ao banco via SSH tunel
+
+```bash
+ssh -L 3306:localhost:3306 hajar-admin@212.85.19.190
+```
+
 ### Frontend
 
 1. Crie um arquivo `.env` na pasta `front/`:

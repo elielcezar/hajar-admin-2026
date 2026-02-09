@@ -25,15 +25,15 @@ const handleMulterError = (upload) => {
 // Criar Post (protegido)
 router.post('/posts', authenticateToken, handleMulterError(uploadPostsS3.single('imagemCapa')), validate(postSchema), async (req, res, next) => {
     try {
-        const { 
-            titulo, 
-            slug, 
-            chamada, 
-            conteudo, 
-            dataPublicacao, 
-            status, 
-            categoriaId, 
-            imovelId 
+        const {
+            titulo,
+            slug,
+            chamada,
+            conteudo,
+            dataPublicacao,
+            status,
+            categoriaId,
+            imovelId
         } = req.body;
 
         const imagemCapa = req.file ? req.file.location : null;
@@ -66,7 +66,7 @@ router.post('/posts', authenticateToken, handleMulterError(uploadPostsS3.single(
 router.get('/posts', async (req, res, next) => {
     try {
         const { status, categoriaId, imovelId } = req.query;
-        
+
         const filtro = {};
         if (status) filtro.status = status;
         if (categoriaId) filtro.categoriaId = parseInt(categoriaId);
@@ -90,6 +90,28 @@ router.get('/posts', async (req, res, next) => {
         });
 
         res.status(200).json(posts);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Obter Post por ID (admin)
+router.get('/posts/id/:id', async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const post = await prisma.post.findUnique({
+            where: { id: parseInt(id) },
+            include: {
+                categoria: true,
+                imovel: true
+            }
+        });
+
+        if (!post) {
+            throw new NotFoundError('Post não encontrado');
+        }
+
+        res.status(200).json(post);
     } catch (error) {
         next(error);
     }
@@ -121,15 +143,15 @@ router.get('/posts/:slug', async (req, res, next) => {
 router.put('/posts/:id', authenticateToken, handleMulterError(uploadPostsS3.single('imagemCapa')), validate(postSchema), async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { 
-            titulo, 
-            slug, 
-            chamada, 
-            conteudo, 
-            dataPublicacao, 
-            status, 
-            categoriaId, 
-            imovelId 
+        const {
+            titulo,
+            slug,
+            chamada,
+            conteudo,
+            dataPublicacao,
+            status,
+            categoriaId,
+            imovelId
         } = req.body;
 
         const postExistente = await prisma.post.findUnique({

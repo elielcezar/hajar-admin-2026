@@ -59,10 +59,8 @@ export const blogService = {
 
   async getPostById(id: number): Promise<Post> {
     try {
-      const posts = await this.getAllPosts();
-      const post = posts.find(p => p.id === id);
-      if (!post) throw new Error('Post não encontrado');
-      return post;
+      const response = await apiClient.get<Post>(`/posts/id/${id}`);
+      return response.data;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -82,7 +80,7 @@ export const blogService = {
       if (data.imovelId && data.imovelId !== '0') {
         formData.append('imovelId', data.imovelId);
       }
-      
+
       if (data.imagemCapa) {
         formData.append('imagemCapa', data.imagemCapa);
       }
@@ -108,13 +106,13 @@ export const blogService = {
       if (data.dataPublicacao !== undefined) formData.append('dataPublicacao', data.dataPublicacao || '');
       if (data.status) formData.append('status', data.status);
       if (data.categoriaId) formData.append('categoriaId', data.categoriaId);
-      
+
       // Tratar imovelId: se for "0", envia vazio para remover a relação
       if (data.imovelId !== undefined) {
         const imovelIdToSend = data.imovelId === '0' ? '' : data.imovelId;
         formData.append('imovelId', imovelIdToSend);
       }
-      
+
       if (data.imagemCapa) {
         formData.append('imagemCapa', data.imagemCapa);
       }
