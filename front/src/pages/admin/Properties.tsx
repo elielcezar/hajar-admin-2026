@@ -22,7 +22,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Plus, Pencil, Trash2, ArrowUpDown, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, ArrowUpDown, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type SortColumn = 'titulo' | 'cidade' | 'valor';
@@ -115,6 +115,12 @@ export default function Properties() {
       return property.tipo[0].tipo.nome;
     }
     return 'N/A';
+  };
+
+  const getThumbnailUrl = (property: Property): string | undefined => {
+    if (property.imagemCapa) return property.imagemCapa;
+    if (property.fotos && property.fotos.length > 0) return property.fotos[0];
+    return undefined;
   };
 
   return (
@@ -210,17 +216,24 @@ export default function Properties() {
                 paginatedProperties.map((property) => (
                   <TableRow key={property.id}>
                     <TableCell>
-                      {property.fotos && property.fotos.length > 0 ? (
-                        <img
-                          src={property.fotos[0]}
-                          alt={property.titulo}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
-                          <span className="text-xs text-muted-foreground">Sem foto</span>
-                        </div>
-                      )}
+                      {(() => {
+                        const thumb = getThumbnailUrl(property);
+                        if (thumb) {
+                          return (
+                            <img
+                              src={thumb}
+                              alt={property.titulo}
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          );
+                        }
+
+                        return (
+                          <div className="w-16 h-16 bg-muted rounded flex items-center justify-center">
+                            <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="font-medium">{property.codigo}</TableCell>
                     <TableCell>{property.titulo}</TableCell>
