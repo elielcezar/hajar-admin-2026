@@ -19,9 +19,73 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, X, Upload, Search } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { GoogleMap } from '@/components/ui/google-map';
 import CurrencyInput from 'react-currency-input-field';
+
+interface ImageItem {
+  id: string;
+  preview: string;
+  file?: File;
+  url?: string;
+  isOld: boolean;
+}
+
+interface SortableImageProps {
+  item: ImageItem;
+  index: number;
+  onRemove: () => void;
+  isLoading: boolean;
+}
+
+function SortableImage({ item, index, onRemove, isLoading }: SortableImageProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: isDragging ? 'grabbing' : 'grab',
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative group" {...attributes} {...listeners}>
+      <img
+        src={item.preview}
+        alt={`Preview ${index + 1}`}
+        className="w-full h-32 object-cover rounded-lg select-none pointer-events-none"
+      />
+      <Button
+        type="button"
+        variant="destructive"
+        size="icon"
+        className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={onRemove}
+        disabled={isLoading}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
 
 export default function PropertyForm() {
   const { id } = useParams();
@@ -60,9 +124,16 @@ export default function PropertyForm() {
     oldImagemCapa: '',
   });
 
-  const [previewImages, setPreviewImages] = useState<string[]>([]);
+  const [images, setImages] = useState<ImageItem[]>([]);
   const [previewCapa, setPreviewCapa] = useState<string | null>(null);
   const [loadingCep, setLoadingCep] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Callback para atualizar coordenadas quando o mapa fizer geocoding
   const handleLocationChange = (lat: number, lng: number) => {
@@ -123,7 +194,13 @@ export default function PropertyForm() {
         oldPhotos: property.fotos || [],
         oldImagemCapa: property.imagemCapa || '',
       });
-      setPreviewImages(property.fotos || []);
+      const existingImages: ImageItem[] = (property.fotos || []).map((url: string, index: number) => ({
+        id: `old-${index}-${url}`,
+        preview: url,
+        url,
+        isOld: true,
+      }));
+      setImages(existingImages);
       setPreviewCapa(property.imagemCapa || null);
     }
   }, [property, isEdit]);
@@ -173,10 +250,22 @@ export default function PropertyForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log('📤 Enviando formulário com dados:', {
+    const orderedNewFiles = images.filter(img => !img.isOld && img.file).map(img => img.file!) || [];
+    const orderedOldUrls =
+      images.filter(img => img.isOld && img.url).map(img => img.url!) ||
+      formData.oldPhotos ||
+      [];
+
+    const dataToSubmit: PropertyFormData = {
       ...formData,
-      fotos: formData.fotos?.length || 0,
-      oldPhotos: formData.oldPhotos?.length || 0
+      fotos: orderedNewFiles,
+      oldPhotos: orderedOldUrls,
+    };
+
+    console.log('📤 Enviando formulário com dados:', {
+      ...dataToSubmit,
+      fotos: dataToSubmit.fotos?.length || 0,
+      oldPhotos: dataToSubmit.oldPhotos?.length || 0,
     });
     console.log('📍 Coordenadas no momento do envio:', {
       latitude: formData.latitude,
@@ -184,9 +273,9 @@ export default function PropertyForm() {
     });
 
     if (isEdit) {
-      updateMutation.mutate(formData);
+      updateMutation.mutate(dataToSubmit);
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(dataToSubmit);
     }
   };
 
@@ -270,7 +359,7 @@ export default function PropertyForm() {
     if (!files) return;
 
     const newFiles = Array.from(files);
-    const currentTotal = (formData.fotos?.length || 0) + (formData.oldPhotos?.length || 0);
+    const currentTotal = images.length;
 
     if (currentTotal + newFiles.length > 18) {
       toast({
@@ -312,17 +401,21 @@ export default function PropertyForm() {
       return;
     }
 
-    // Adicionar novas fotos
-    setFormData(prev => ({
-      ...prev,
-      fotos: [...(prev.fotos || []), ...newFiles],
-    }));
-
-    // Criar previews
+    // Criar items com preview e arquivo
     newFiles.forEach(file => {
+      const id = crypto.randomUUID();
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewImages(prev => [...prev, reader.result as string]);
+        const preview = reader.result as string;
+        setImages(prev => [
+          ...prev,
+          {
+            id,
+            preview,
+            file,
+            isOld: false,
+          },
+        ]);
       };
       reader.readAsDataURL(file);
     });
@@ -332,25 +425,26 @@ export default function PropertyForm() {
   };
 
   // Remover imagem
-  const handleRemoveImage = (index: number) => {
-    const totalOldPhotos = formData.oldPhotos?.length || 0;
+  const handleRemoveImage = (id: string) => {
+    setImages(prev => prev.filter(img => img.id !== id));
+  };
 
-    if (index < totalOldPhotos) {
-      // Remover de oldPhotos
-      setFormData(prev => ({
-        ...prev,
-        oldPhotos: prev.oldPhotos?.filter((_, i) => i !== index),
-      }));
-    } else {
-      // Remover de novas fotos
-      const newIndex = index - totalOldPhotos;
-      setFormData(prev => ({
-        ...prev,
-        fotos: prev.fotos?.filter((_, i) => i !== newIndex),
-      }));
-    }
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-    setPreviewImages(prev => prev.filter((_, i) => i !== index));
+    if (!over || active.id === over.id) return;
+
+    setImages(prev => {
+      const oldIndex = prev.findIndex(item => item.id === active.id);
+      const newIndex = prev.findIndex(item => item.id === over.id);
+
+      if (oldIndex === -1 || newIndex === -1) return prev;
+
+      const updated = [...prev];
+      const [moved] = updated.splice(oldIndex, 1);
+      updated.splice(newIndex, 0, moved);
+      return updated;
+    });
   };
 
   // Handler para upload de imagem de capa
@@ -794,29 +888,27 @@ export default function PropertyForm() {
                 Formatos aceitos: JPEG, JPG, PNG, WEBP
               </p>
               <div className="space-y-4">
-                {/* Preview de imagens */}
-                {previewImages.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {previewImages.map((img, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={img}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveImage(index)}
-                          disabled={isLoading}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                {/* Preview de imagens com drag-and-drop */}
+                {images.length > 0 && (
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext items={images.map(img => img.id)} strategy={rectSortingStrategy}>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {images.map((img, index) => (
+                          <SortableImage
+                            key={img.id}
+                            item={img}
+                            index={index}
+                            onRemove={() => handleRemoveImage(img.id)}
+                            isLoading={isLoading}
+                          />
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </SortableContext>
+                  </DndContext>
                 )}
 
                 {/* Input de upload */}
@@ -827,20 +919,20 @@ export default function PropertyForm() {
                     accept="image/*"
                     multiple
                     onChange={handleImageChange}
-                    disabled={isLoading || previewImages.length >= 10}
+                    disabled={isLoading || images.length >= 10}
                     className="hidden"
                   />
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => document.getElementById('fotos')?.click()}
-                    disabled={isLoading || previewImages.length >= 18}
+                    disabled={isLoading || images.length >= 18}
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Adicionar Imagens
                   </Button>
                   <span className="text-sm text-muted-foreground">
-                    {previewImages.length} / 18 imagens
+                    {images.length} / 18 imagens
                   </span>
                 </div>
               </div>
