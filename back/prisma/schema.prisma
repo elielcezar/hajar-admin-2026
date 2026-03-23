@@ -44,13 +44,14 @@ model Imovel {
   garagem         Boolean             @default(false)
   geminada        Boolean             @default(false)
   terrenoMedidas  String?
-  terrenoM2       Int?
-  areaConstruida  Int?  
+  terrenoM2       Float?
+  areaConstruida  Float?
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
   tipo            ImovelTipo[]
   finalidade      ImovelFinalidade[]
   categorias      ImovelCategoria[]
+  proximidades    ImovelProximidade[]
   posts           Post[]
 
   @@map("imoveis")
@@ -141,6 +142,27 @@ model Destaque {
   @@map("destaques")
   @@index([ativo])
   @@index([ordem])
+}
+
+model Proximidade {
+  id        Int                 @id @default(autoincrement())
+  nome      String              @unique
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  imoveis   ImovelProximidade[]
+
+  @@map("proximidades")
+}
+
+model ImovelProximidade {
+  id             Int          @id @default(autoincrement())
+  imovelId       Int
+  proximidadeId  Int
+  imovel         Imovel       @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  proximidade    Proximidade  @relation(fields: [proximidadeId], references: [id], onDelete: Cascade)
+
+  @@unique([imovelId, proximidadeId])
+  @@map("imovel_proximidades")
 }
 
 // BLOG SYSTEM

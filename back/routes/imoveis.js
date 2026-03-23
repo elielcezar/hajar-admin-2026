@@ -146,7 +146,8 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadImoveisFields
             geminada,
             terrenoMedidas,
             terrenoM2,
-            areaConstruida
+            areaConstruida,
+            proximidades
         } = req.body;
 
         console.log('📝 Dados body recebidos:', {
@@ -225,8 +226,8 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadImoveisFields
                 garagem: garagem === 'true',
                 geminada: geminada === 'true',
                 terrenoMedidas,
-                terrenoM2: terrenoM2 ? parseInt(terrenoM2) : null,
-                areaConstruida: areaConstruida ? parseInt(areaConstruida) : null,
+                terrenoM2: terrenoM2 ? parseFloat(terrenoM2) : null,
+                areaConstruida: areaConstruida ? parseFloat(areaConstruida) : null,
                 fotos: fotos,
                 imagemCapa: imagemCapa,
                 tipo: {
@@ -238,19 +239,19 @@ router.post('/imoveis', authenticateToken, handleMulterError(uploadImoveisFields
                     create: [{
                         finalidadeId: parseInt(finalidade)
                     }]
-                }
+                },
+                proximidades: proximidades
+                    ? {
+                        create: JSON.parse(proximidades).map(id => ({
+                            proximidadeId: parseInt(id)
+                        }))
+                      }
+                    : undefined
             },
             include: {
-                tipo: {
-                    include: {
-                        tipo: true
-                    }
-                },
-                finalidade: {
-                    include: {
-                        finalidade: true
-                    }
-                }
+                tipo: { include: { tipo: true } },
+                finalidade: { include: { finalidade: true } },
+                proximidades: { include: { proximidade: true } }
             }
         });
 
@@ -300,21 +301,10 @@ router.get('/imoveis', async (req, res, next) => {
         const imoveis = await prisma.imovel.findMany({
             where: filtro,
             include: {
-                tipo: {
-                    include: {
-                        tipo: true
-                    }
-                },
-                finalidade: {
-                    include: {
-                        finalidade: true
-                    }
-                },
-                categorias: {
-                    include: {
-                        categoria: true
-                    }
-                }
+                tipo: { include: { tipo: true } },
+                finalidade: { include: { finalidade: true } },
+                categorias: { include: { categoria: true } },
+                proximidades: { include: { proximidade: true } }
             },
             orderBy: {
                 createdAt: 'desc'
@@ -340,25 +330,12 @@ router.get('/imoveis/id/:id', async (req, res, next) => {
         const { id } = req.params;
 
         const imovel = await prisma.imovel.findUnique({
-            where: {
-                id: parseInt(id)
-            },
+            where: { id: parseInt(id) },
             include: {
-                tipo: {
-                    include: {
-                        tipo: true
-                    }
-                },
-                finalidade: {
-                    include: {
-                        finalidade: true
-                    }
-                },
-                categorias: {
-                    include: {
-                        categoria: true
-                    }
-                }
+                tipo: { include: { tipo: true } },
+                finalidade: { include: { finalidade: true } },
+                categorias: { include: { categoria: true } },
+                proximidades: { include: { proximidade: true } }
             }
         });
 
@@ -381,25 +358,12 @@ router.get('/imoveis/:codigo', async (req, res, next) => {
 
         const { codigo } = req.params;
         const imovel = await prisma.imovel.findFirst({
-            where: {
-                codigo: codigo
-            },
+            where: { codigo: codigo },
             include: {
-                tipo: {
-                    include: {
-                        tipo: true
-                    }
-                },
-                finalidade: {
-                    include: {
-                        finalidade: true
-                    }
-                },
-                categorias: {
-                    include: {
-                        categoria: true
-                    }
-                }
+                tipo: { include: { tipo: true } },
+                finalidade: { include: { finalidade: true } },
+                categorias: { include: { categoria: true } },
+                proximidades: { include: { proximidade: true } }
             }
         });
 
@@ -444,6 +408,7 @@ router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadImoveisFie
             terrenoMedidas,
             terrenoM2,
             areaConstruida,
+            proximidades,
             oldPhotos,
             oldImagemCapa
         } = req.body;
@@ -499,8 +464,8 @@ router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadImoveisFie
         if (garagem !== undefined) data.garagem = garagem === 'true';
         if (geminada !== undefined) data.geminada = geminada === 'true';
         if (terrenoMedidas !== undefined) data.terrenoMedidas = terrenoMedidas;
-        if (terrenoM2 !== undefined) data.terrenoM2 = terrenoM2 ? parseInt(terrenoM2) : null;
-        if (areaConstruida !== undefined) data.areaConstruida = areaConstruida ? parseInt(areaConstruida) : null;
+        if (terrenoM2 !== undefined) data.terrenoM2 = terrenoM2 ? parseFloat(terrenoM2) : null;
+        if (areaConstruida !== undefined) data.areaConstruida = areaConstruida ? parseFloat(areaConstruida) : null;
 
         console.log('Atualizando imóvel com dados:', data);
 
@@ -545,6 +510,22 @@ router.put('/imoveis/:id', authenticateToken, handleMulterError(uploadImoveisFie
                     finalidadeId: parseInt(finalidade)
                 }
             });
+        }
+
+        // Atualizar proximidades
+        if (proximidades !== undefined) {
+            await prisma.imovelProximidade.deleteMany({
+                where: { imovelId: parseInt(id) }
+            });
+            const ids = JSON.parse(proximidades);
+            if (ids.length > 0) {
+                await prisma.imovelProximidade.createMany({
+                    data: ids.map(proxId => ({
+                        imovelId: parseInt(id),
+                        proximidadeId: parseInt(proxId)
+                    }))
+                });
+            }
         }
 
         console.log('Imóvel atualizado com sucesso');

@@ -20,6 +20,13 @@ export interface Finalidade {
   updatedAt: string;
 }
 
+export interface Proximidade {
+  id: number;
+  nome: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Imóvel
 export interface Property {
   id: number;
@@ -60,6 +67,10 @@ export interface Property {
     id: number;
     categoria: Categoria;
   }[];
+  proximidades?: {
+    id: number;
+    proximidade: Proximidade;
+  }[];
 }
 
 // Para criar/editar imóvel
@@ -87,6 +98,7 @@ export interface PropertyFormData {
   terrenoMedidas?: string;
   terrenoM2?: number;
   areaConstruida?: number;
+  proximidades?: number[]; // IDs das proximidades selecionadas
   fotos?: File[]; // Arquivos para upload
   oldPhotos?: string[]; // URLs existentes
   imagemCapa?: File; // Arquivo da imagem de capa para upload

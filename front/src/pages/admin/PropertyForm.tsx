@@ -37,6 +37,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { GoogleMap } from '@/components/ui/google-map';
+import { ProximidadeInput } from '@/components/ui/proximidade-input';
 import CurrencyInput from 'react-currency-input-field';
 
 interface ImageItem {
@@ -118,6 +119,7 @@ export default function PropertyForm() {
     terrenoMedidas: '',
     terrenoM2: undefined,
     areaConstruida: undefined,
+    proximidades: [],
     fotos: [],
     oldPhotos: [],
     imagemCapa: undefined,
@@ -190,6 +192,7 @@ export default function PropertyForm() {
         terrenoMedidas: property.terrenoMedidas || '',
         terrenoM2: property.terrenoM2,
         areaConstruida: property.areaConstruida,
+        proximidades: (property.proximidades || []).map((p) => p.proximidade.id),
         fotos: [],
         oldPhotos: property.fotos || [],
         oldImagemCapa: property.imagemCapa || '',
@@ -574,7 +577,7 @@ export default function PropertyForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="finalidade">Finalidade *</Label>
+                <Label htmlFor="finalidade">Status *</Label>
                 <Select
                   value={formData.finalidade}
                   onValueChange={(value) => handleChange('finalidade', value)}
@@ -716,8 +719,9 @@ export default function PropertyForm() {
                     id="areaConstruida"
                     type="number"
                     min="0"
+                    step="0.01"
                     value={formData.areaConstruida ?? ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, areaConstruida: e.target.value ? parseInt(e.target.value) : undefined }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, areaConstruida: e.target.value ? parseFloat(e.target.value) : undefined }))}
                     disabled={isLoading}
                     placeholder=""
                   />
@@ -729,8 +733,9 @@ export default function PropertyForm() {
                     id="terrenoM2"
                     type="number"
                     min="0"
+                    step="0.01"
                     value={formData.terrenoM2 ?? ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, terrenoM2: e.target.value ? parseInt(e.target.value) : undefined }))}
+                    onChange={(e) => setFormData(prev => ({ ...prev, terrenoM2: e.target.value ? parseFloat(e.target.value) : undefined }))}
                     disabled={isLoading}
                     placeholder=""
                   />
@@ -747,6 +752,19 @@ export default function PropertyForm() {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Proximidades */}
+            <div className="space-y-2 pt-4 border-t">
+              <Label>Proximidades</Label>
+              <ProximidadeInput
+                value={formData.proximidades ?? []}
+                onChange={(ids) => setFormData((prev) => ({ ...prev, proximidades: ids }))}
+                disabled={isLoading}
+              />
+              <p className="text-xs text-muted-foreground">
+                Digite para buscar. Se não existir, será criado automaticamente.
+              </p>
             </div>
 
             {/* Seção de Endereço com CEP */}

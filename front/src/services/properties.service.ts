@@ -82,6 +82,7 @@ export const propertiesService = {
       if (data.terrenoMedidas) formData.append('terrenoMedidas', data.terrenoMedidas);
       formData.append('tipo', data.tipo);
       formData.append('finalidade', data.finalidade);
+      formData.append('proximidades', JSON.stringify(data.proximidades ?? []));
 
       // Adicionar fotos
       if (data.fotos && data.fotos.length > 0) {
@@ -156,6 +157,7 @@ export const propertiesService = {
       if (data.terrenoMedidas) formData.append('terrenoMedidas', data.terrenoMedidas);
       if (data.tipo) formData.append('tipo', data.tipo);
       if (data.finalidade) formData.append('finalidade', data.finalidade);
+      formData.append('proximidades', JSON.stringify(data.proximidades ?? []));
 
       // Adicionar fotos antigas (manter)
       if (data.oldPhotos && data.oldPhotos.length > 0) {

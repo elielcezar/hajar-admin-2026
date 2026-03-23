@@ -79,6 +79,10 @@ export const finalidadeSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
 });
 
+export const proximidadeSchema = z.object({
+  nome: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
+});
+
 export const blogCategoriaSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres'),
 });
