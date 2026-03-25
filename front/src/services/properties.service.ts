@@ -57,17 +57,11 @@ export const propertiesService = {
       if (data.bairro) formData.append('bairro', data.bairro);
       if (data.cidade) formData.append('cidade', data.cidade);
       if (data.estado) formData.append('estado', data.estado);
-      if (data.latitude !== undefined) {
-        console.log('✅ Adicionando latitude ao FormData:', data.latitude);
+      if (data.latitude != null) {
         formData.append('latitude', data.latitude.toString());
-      } else {
-        console.warn('⚠️ Latitude está undefined, não será enviada!');
       }
-      if (data.longitude !== undefined) {
-        console.log('✅ Adicionando longitude ao FormData:', data.longitude);
+      if (data.longitude != null) {
         formData.append('longitude', data.longitude.toString());
-      } else {
-        console.warn('⚠️ Longitude está undefined, não será enviada!');
       }
       // Campos numéricos
       if (data.suites !== undefined && data.suites !== null) formData.append('suites', data.suites.toString());
@@ -132,17 +126,11 @@ export const propertiesService = {
       if (data.bairro) formData.append('bairro', data.bairro);
       if (data.cidade) formData.append('cidade', data.cidade);
       if (data.estado) formData.append('estado', data.estado);
-      if (data.latitude !== undefined) {
-        console.log('✅ [UPDATE] Adicionando latitude ao FormData:', data.latitude);
+      if (data.latitude != null) {
         formData.append('latitude', data.latitude.toString());
-      } else {
-        console.warn('⚠️ [UPDATE] Latitude está undefined, não será enviada!');
       }
-      if (data.longitude !== undefined) {
-        console.log('✅ [UPDATE] Adicionando longitude ao FormData:', data.longitude);
+      if (data.longitude != null) {
         formData.append('longitude', data.longitude.toString());
-      } else {
-        console.warn('⚠️ [UPDATE] Longitude está undefined, não será enviada!');
       }
       // Campos numéricos
       if (data.suites !== undefined && data.suites !== null) formData.append('suites', data.suites.toString());
