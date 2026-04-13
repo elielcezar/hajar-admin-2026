@@ -21,7 +21,11 @@ jobs:
         username: ${{ secrets.VPS_SSH_USER }}
         key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
         script: |
+          set -e
           cd /home/hajar-admin/htdocs/admin.hajar.com.br/
+
+          # Pull latest code (includes deploy.sh)
+          git pull origin main
 
           # Create backend .env file
           echo "${{ secrets.DOTENV_BACKEND }}" > back/.env

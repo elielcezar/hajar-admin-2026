@@ -3,10 +3,6 @@ set -e
 
 echo "=== Iniciando deploy ==="
 
-# Pull latest code
-echo ">> Git pull..."
-git pull origin main
-
 # Backend
 echo ">> Instalando dependencias do backend..."
 cd back
