@@ -4,14 +4,17 @@ import prisma from '../config/prisma.js';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt.js';
 import { validate, loginSchema } from '../middleware/validation.js';
 import { UnauthorizedError } from '../utils/errors.js';
+import { verifyRecaptcha } from '../utils/recaptcha.js';
 
 const router = express.Router();
 
 // Login do usuario
 router.post('/login', validate(loginSchema), async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, recaptchaToken } = req.body;
         console.log('Tentativa de login:', email);
+
+        await verifyRecaptcha(recaptchaToken);
 
         // Buscar usuário pelo email
         const user = await prisma.user.findUnique({

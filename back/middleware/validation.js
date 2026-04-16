@@ -33,6 +33,7 @@ export const validate = (schema, source = 'body') => {
 export const loginSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+  recaptchaToken: z.string().optional(),
 });
 
 export const userCreateSchema = z.object({

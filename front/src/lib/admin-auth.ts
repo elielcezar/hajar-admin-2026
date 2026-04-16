@@ -5,10 +5,10 @@ import { AdminUser } from '@/types/admin';
 export type { AdminUser };
 
 export const adminAuth = {
-  login: async (email: string, password: string): Promise<{ user?: AdminUser; error?: string }> => {
+  login: async (email: string, password: string, recaptchaToken?: string): Promise<{ user?: AdminUser; error?: string }> => {
     try {
-      const response = await authService.login(email, password);
-      return { user: { ...response.user, role: 'admin' } }; // Adiciona role para compatibilidade
+      const response = await authService.login(email, password, recaptchaToken);
+      return { user: { ...response.user, role: 'admin' } };
     } catch (error) {
       return { error: error instanceof Error ? error.message : 'Erro ao fazer login' };
     }

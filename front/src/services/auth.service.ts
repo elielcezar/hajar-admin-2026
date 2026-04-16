@@ -6,11 +6,12 @@ export const authService = {
   /**
    * Fazer login
    */
-  async login(email: string, password: string): Promise<LoginResponse> {
+  async login(email: string, password: string, recaptchaToken?: string): Promise<LoginResponse> {
     try {
       const response = await apiClient.post<LoginResponse>('/login', {
         email,
         password,
+        ...(recaptchaToken && { recaptchaToken }),
       });
 
       const { accessToken, refreshToken, user } = response.data;
