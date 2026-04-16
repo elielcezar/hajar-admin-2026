@@ -24,6 +24,10 @@ jobs:
           set -e
           cd /home/hajar-admin/htdocs/admin.hajar.com.br/
 
+          # Descartar alterações locais (ex: .env gerados pelo deploy anterior)
+          git reset --hard
+          git clean -fd --exclude=node_modules --exclude=.env
+
           # Pull latest code (includes deploy.sh)
           git pull origin main
 
